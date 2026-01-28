@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import styles from "./Toast.module.css";
 
 type ToastType = "info" | "success" | "error" | "warning";
@@ -38,8 +38,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     setToasts((p) => p.filter((t) => t.id !== id));
   }, []);
 
+  const value = useMemo(() => ({ toasts, add, remove }), [toasts, add, remove]);
+
   return (
-    <ToastContext.Provider value={{ toasts, add, remove }}>
+    <ToastContext.Provider value={value}>
       {children}
       <div className={styles.list} role="region" aria-label="Notifications">
         {toasts.map((t) => (
@@ -47,7 +49,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             key={t.id}
             className={`${styles.toast} ${styles[`toast--${t.type}`]}`}
             role="alert"
-            onMouseEnter={() => {}}
+            onMouseEnter={() => { }}
           >
             <p className={styles.message}>{t.message}</p>
             <button

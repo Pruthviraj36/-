@@ -3,13 +3,13 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/api-auth";
 
 export async function GET() {
-  await requireRole(["admin"]);
+  await requireRole(["admin", "faculty"]);
   const list = await prisma.projectType.findMany({ orderBy: { ProjectTypeName: "asc" } });
   return Response.json(list);
 }
 
 export async function POST(req: NextRequest) {
-  await requireRole(["admin"]);
+  await requireRole(["admin", "faculty"]);
   const b = await req.json();
   const { ProjectTypeName, Description } = b;
   if (!ProjectTypeName) return Response.json({ error: "ProjectTypeName required" }, { status: 400 });

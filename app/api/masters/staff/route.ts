@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/api-auth";
 
 export async function GET() {
-  await requireRole(["admin"]);
+  await requireRole(["admin", "faculty"]);
   const list = await prisma.staff.findMany({
     orderBy: { StaffName: "asc" },
     select: { StaffID: true, StaffName: true, Phone: true, Email: true, Role: true, Description: true, Created: true, Modified: true },

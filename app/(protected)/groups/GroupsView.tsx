@@ -33,14 +33,20 @@ export function GroupsView({ role }: { role: string }) {
   useEffect(() => {
     (async () => {
       try {
-        const [r, pt, st] = await Promise.all([
+        const promises: [Promise<any>, Promise<any>?, Promise<any>?] = [
           fetch("/api/groups").then((x) => x.json()),
-          fetch("/api/masters/project-types").then((x) => x.json()),
-          fetch("/api/masters/staff").then((x) => x.json()),
-        ]);
+        ];
+        if (canEdit) {
+          promises.push(fetch("/api/masters/project-types").then((x) => x.json()));
+          promises.push(fetch("/api/masters/staff").then((x) => x.json()));
+        }
+
+        const [r, pt, st] = await Promise.all(promises);
         setList(Array.isArray(r) ? r : []);
-        setProjectTypes([{ value: "", label: "Select type" }, ...(pt || []).map((p: { ProjectTypeID: number; ProjectTypeName: string }) => ({ value: String(p.ProjectTypeID), label: p.ProjectTypeName }))]);
-        setStaff([{ value: "", label: "Select guide" }, ...(st || []).map((s: { StaffID: number; StaffName: string }) => ({ value: String(s.StaffID), label: s.StaffName }))]);
+        if (canEdit) {
+          setProjectTypes([{ value: "", label: "Select type" }, ...(pt || []).map((p: { ProjectTypeID: number; ProjectTypeName: string }) => ({ value: String(p.ProjectTypeID), label: p.ProjectTypeName }))]);
+          setStaff([{ value: "", label: "Select guide" }, ...(st || []).map((s: { StaffID: number; StaffName: string }) => ({ value: String(s.StaffID), label: s.StaffName }))]);
+        }
       } catch (e) {
         toast.add("Failed to load groups", "error");
       } finally {
