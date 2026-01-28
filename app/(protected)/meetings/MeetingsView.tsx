@@ -28,6 +28,7 @@ interface Meeting {
 export function MeetingsView({ role }: { role: string }) {
   const [list, setList] = useState<Meeting[]>([]);
   const [groups, setGroups] = useState<{ value: string; label: string }[]>([]);
+  const [fullGroups, setFullGroups] = useState<any[]>([]);
   const [staff, setStaff] = useState<{ value: string; label: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<"create" | "detail" | null>(null);
@@ -41,12 +42,13 @@ export function MeetingsView({ role }: { role: string }) {
       try {
         const [m, g, s] = await Promise.all([
           fetch("/api/meetings").then((r) => r.json()),
-          canEdit ? fetch("/api/groups").then((r) => r.json()) : Promise.resolve([]),
+          fetch("/api/groups").then((r) => r.json()),
           canEdit ? fetch("/api/masters/staff").then((r) => r.json()) : Promise.resolve([]),
         ]);
         setList(Array.isArray(m) ? m : []);
+        setFullGroups(Array.isArray(g) ? g : []);
+        setGroups([{ value: "", label: "Select group" }, ...(Array.isArray(g) ? g : []).map((x: any) => ({ value: String(x.ProjectGroupID), label: x.ProjectGroupName }))]);
         if (canEdit) {
-          setGroups([{ value: "", label: "Select group" }, ...(Array.isArray(g) ? g : []).map((x: any) => ({ value: String(x.ProjectGroupID), label: x.ProjectGroupName }))]);
           setStaff([{ value: "", label: "Select guide" }, ...(Array.isArray(s) ? s : []).map((x: any) => ({ value: String(x.StaffID), label: x.StaffName }))]);
         }
       } catch {
@@ -118,28 +120,68 @@ export function MeetingsView({ role }: { role: string }) {
     }
   }
 
-  async function toggleAttendance(studentId: number, current: boolean) {
+  async function updateAttendance(studentId: number, isPresent: boolean, remarks: string | null) {
     if (!selected) return;
     try {
       const res = await fetch(`/api/meetings/${selected.ProjectMeetingID}/attendance`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ StudentID: studentId, IsPresent: !current }),
+        body: JSON.stringify({ StudentID: studentId, IsPresent: isPresent, AttendanceRemarks: remarks }),
       });
       if (!res.ok) throw new Error();
       toast.add("Attendance updated", "success");
       // Update local state for immediate feedback
       setList(prev => prev.map(m => {
         if (m.ProjectMeetingID === selected.ProjectMeetingID) {
-          const newAtt = m.attendances.map(a => a.student.StudentID === studentId ? { ...a, IsPresent: !current } : a);
+          const exists = m.attendances.find(a => a.student.StudentID === studentId);
+          let newAtt;
+          if (exists) {
+            newAtt = m.attendances.map(a => a.student.StudentID === studentId ? { ...a, IsPresent: isPresent, AttendanceRemarks: remarks } : a);
+          } else {
+            const group = fullGroups.find(g => g.ProjectGroupID === m.ProjectGroupID);
+            const student = group?.members.find((mem: any) => mem.student.StudentID === studentId)?.student;
+            if (student) {
+              newAtt = [...m.attendances, { student: { StudentID: studentId, StudentName: student.StudentName }, IsPresent: isPresent, AttendanceRemarks: remarks }];
+            } else {
+              newAtt = m.attendances;
+            }
+          }
           return { ...m, attendances: newAtt };
         }
         return m;
       }));
-      setSelected(prev => prev ? { ...prev, attendances: prev.attendances.map(a => a.student.StudentID === studentId ? { ...a, IsPresent: !current } : a) } : null);
+      // Also update selected
+      setSelected(prev => {
+        if (!prev) return null;
+        const exists = prev.attendances.find(a => a.student.StudentID === studentId);
+        if (exists) {
+          return { ...prev, attendances: prev.attendances.map(a => a.student.StudentID === studentId ? { ...a, IsPresent: isPresent, AttendanceRemarks: remarks } : a) };
+        } else {
+          const group = fullGroups.find(g => g.ProjectGroupID === prev.ProjectGroupID);
+          const student = group?.members.find((mem: any) => mem.student.StudentID === studentId)?.student;
+          if (!student) return prev;
+          return { ...prev, attendances: [...prev.attendances, { student: { StudentID: studentId, StudentName: student.StudentName }, IsPresent: isPresent, AttendanceRemarks: remarks }] };
+        }
+      });
     } catch {
       toast.add("Failed to update attendance", "error");
     }
+  }
+
+  function updateLocalRemarks(studentId: number, remarks: string) {
+    if (!selected) return;
+    setSelected(prev => {
+      if (!prev) return null;
+      const exists = prev.attendances.find(a => a.student.StudentID === studentId);
+      if (exists) {
+        return { ...prev, attendances: prev.attendances.map(a => a.student.StudentID === studentId ? { ...a, AttendanceRemarks: remarks } : a) };
+      } else {
+        const group = fullGroups.find(g => g.ProjectGroupID === prev.ProjectGroupID);
+        const student = group?.members.find((mem: any) => mem.student.StudentID === studentId)?.student;
+        if (!student) return prev;
+        return { ...prev, attendances: [...prev.attendances, { student: { StudentID: studentId, StudentName: student.StudentName }, IsPresent: false, AttendanceRemarks: remarks }] };
+      }
+    });
   }
 
   if (loading) return <p className="text-muted">Loading…</p>;
@@ -151,6 +193,16 @@ export function MeetingsView({ role }: { role: string }) {
     { key: "MeetingPurpose", header: "Purpose", render: (r) => r.MeetingPurpose || "—", mobileLabel: "Purpose" },
     { key: "MeetingStatus", header: "Status", mobileLabel: "Status" },
   ];
+
+  // Merge group members with attendance
+  const attendanceList = selected ? (() => {
+    const group = fullGroups.find(g => g.ProjectGroupID === selected.ProjectGroupID);
+    if (!group) return selected.attendances;
+    return group.members.map((m: any) => {
+      const att = selected.attendances.find(a => a.student.StudentID === m.student.StudentID);
+      return att || { student: m.student, IsPresent: false, AttendanceRemarks: null };
+    });
+  })() : [];
 
   return (
     <div className={styles.wrap}>
@@ -185,7 +237,7 @@ export function MeetingsView({ role }: { role: string }) {
               {canEdit ? (
                 <div style={{ display: "flex", gap: "var(--space-xs)" }}>
                   <textarea
-                    className={styles.textarea} // utilizing existing class or I might need to add one, but inline for now is safer if class doesn't exist in module for generic input
+                    className={styles.textarea}
                     style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid var(--color-border)", minHeight: "80px", font: "inherit" }}
                     value={selected.MeetingNotes || ""}
                     onChange={(e) => setSelected(prev => prev ? { ...prev, MeetingNotes: e.target.value } : null)}
@@ -207,31 +259,45 @@ export function MeetingsView({ role }: { role: string }) {
 
             <div className={styles.attendance} style={{ marginTop: "var(--space-lg)" }}>
               <h3 className="h4">Attendance</h3>
-              {selected.attendances.length === 0 ? <p className="text-small text-muted">No attendance records.</p> : (
+              {attendanceList.length === 0 ? <p className="text-small text-muted">No members in group.</p> : (
                 <ul className={styles.attList} style={{ listStyle: "none", padding: 0, marginTop: "var(--space-sm)" }}>
-                  {selected.attendances.map(a => (
-                    <li key={a.student.StudentID} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "var(--space-xs) 0", borderBottom: "1px solid var(--color-border)" }}>
-                      <span>{a.student.StudentName}</span>
+                  {attendanceList.map((a: any) => (
+                    <li key={a.student.StudentID} style={{ display: "flex", flexDirection: "column", gap: "4px", padding: "var(--space-xs) 0", borderBottom: "1px solid var(--color-border)" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <span>{a.student.StudentName}</span>
+                        {canEdit ? (
+                          <button
+                            type="button"
+                            onClick={() => updateAttendance(a.student.StudentID, !a.IsPresent, a.AttendanceRemarks)}
+                            style={{
+                              padding: "4px 8px",
+                              borderRadius: "var(--radius-sm)",
+                              border: "1px solid var(--color-border)",
+                              background: a.IsPresent ? "var(--color-success)" : "var(--color-surface)",
+                              color: a.IsPresent ? "#fff" : "inherit",
+                              fontSize: "var(--font-size-xs)",
+                              cursor: "pointer"
+                            }}
+                          >
+                            {a.IsPresent ? "Present" : "Absent"}
+                          </button>
+                        ) : (
+                          <span style={{ color: a.IsPresent ? "var(--color-success)" : "var(--color-danger)" }}>
+                            {a.IsPresent ? "Present" : "Absent"}
+                          </span>
+                        )}
+                      </div>
                       {canEdit ? (
-                        <button
-                          type="button"
-                          onClick={() => toggleAttendance(a.student.StudentID, a.IsPresent)}
-                          style={{
-                            padding: "4px 8px",
-                            borderRadius: "var(--radius-sm)",
-                            border: "1px solid var(--color-border)",
-                            background: a.IsPresent ? "var(--color-success)" : "var(--color-surface)",
-                            color: a.IsPresent ? "#white" : "inherit",
-                            fontSize: "var(--font-size-xs)",
-                            cursor: "pointer"
-                          }}
-                        >
-                          {a.IsPresent ? "Present" : "Absent"}
-                        </button>
+                        <input
+                          type="text"
+                          placeholder="Remarks..."
+                          value={a.AttendanceRemarks || ""}
+                          onChange={(e) => updateLocalRemarks(a.student.StudentID, e.target.value)}
+                          onBlur={(e) => updateAttendance(a.student.StudentID, a.IsPresent, e.target.value)}
+                          style={{ fontSize: "var(--font-size-xs)", padding: "4px", border: "1px solid var(--color-border)", borderRadius: "var(--radius-sm)", width: "100%" }}
+                        />
                       ) : (
-                        <span style={{ color: a.IsPresent ? "var(--color-success)" : "var(--color-danger)" }}>
-                          {a.IsPresent ? "Present" : "Absent"}
-                        </span>
+                        a.AttendanceRemarks && <span className="text-muted" style={{ fontSize: "var(--font-size-xs)" }}>{a.AttendanceRemarks}</span>
                       )}
                     </li>
                   ))}
