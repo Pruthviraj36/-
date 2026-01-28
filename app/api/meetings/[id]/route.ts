@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth, requireRole } from "@/lib/api-auth";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 const include = {
   projectGroup: { select: { ProjectGroupID: true, ProjectGroupName: true, ProjectTitle: true } },
@@ -29,9 +31,15 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (b.MeetingPurpose != null) data.MeetingPurpose = b.MeetingPurpose;
   if (b.MeetingLocation != null) data.MeetingLocation = b.MeetingLocation;
   if (b.MeetingNotes != null) data.MeetingNotes = b.MeetingNotes;
-  if (b.MeetingStatus != null) data.MeetingStatus = b.MeetingStatus;
+  if (b.MeetingStatus != null) {
+    data.MeetingStatus = b.MeetingStatus;
+    data.MeetingStatusDatetime = new Date();
+    const session = await getServerSession(authOptions);
+    if ((session?.user as any).role !== "student") {
+      data.StatusUpdatedByStaffID = Number((session?.user as any).uid);
+    }
+  }
   if (b.MeetingStatusDescription != null) data.MeetingStatusDescription = b.MeetingStatusDescription;
-  if (b.MeetingStatusDatetime != null) data.MeetingStatusDatetime = new Date(b.MeetingStatusDatetime);
   const updated = await prisma.projectMeeting.update({ where: { ProjectMeetingID: id }, data, include });
   return Response.json(updated);
 }

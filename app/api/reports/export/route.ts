@@ -35,6 +35,14 @@ export async function GET(req: NextRequest) {
     const types = await prisma.projectType.findMany();
     const map = Object.fromEntries(types.map((t) => [t.ProjectTypeID, t.ProjectTypeName]));
     rows = list.map((r) => ({ "Project Type": map[r.ProjectTypeID] || "Unknown", "Count": r._count.ProjectGroupID }));
+  } else if (type === "projects-by-guide") {
+    const list = await prisma.projectGroup.groupBy({
+      by: ["GuideStaffID"],
+      _count: { ProjectGroupID: true },
+    });
+    const staff = await prisma.staff.findMany();
+    const map = Object.fromEntries(staff.map((s) => [s.StaffID, s.StaffName]));
+    rows = list.map((r) => ({ "Guide": map[r.GuideStaffID] || "Unknown", "Count": r._count.ProjectGroupID }));
   } else if (type === "group-members") {
     const list = await prisma.projectGroupMember.findMany({
       include: {
@@ -49,6 +57,35 @@ export async function GET(req: NextRequest) {
       "Leader": m.IsGroupLeader ? "Yes" : "No",
       "CGPA": m.StudentCGPA?.toString() ?? "",
     }));
+  } else if (type === "attendance-summary") {
+    const list = await prisma.projectMeetingAttendance.groupBy({
+      by: ["ProjectMeetingID"],
+      _count: { ProjectMeetingAttendanceID: true },
+    });
+    const meetings = await prisma.projectMeeting.findMany({
+      where: { ProjectMeetingID: { in: list.map((l) => l.ProjectMeetingID) } },
+      include: { projectGroup: { select: { ProjectGroupName: true } } },
+    });
+    const att = await prisma.projectMeetingAttendance.findMany({
+      where: { ProjectMeetingID: { in: list.map((l) => l.ProjectMeetingID) } },
+    });
+    const byMeeting: Record<number, { total: number; present: number }> = {};
+    for (const a of att) {
+      if (!byMeeting[a.ProjectMeetingID]) byMeeting[a.ProjectMeetingID] = { total: 0, present: 0 };
+      byMeeting[a.ProjectMeetingID].total++;
+      if (a.IsPresent) byMeeting[a.ProjectMeetingID].present++;
+    }
+    rows = meetings.map((m) => {
+      const stats = byMeeting[m.ProjectMeetingID] || { total: 0, present: 0 };
+      const pct = stats.total ? Math.round((stats.present / stats.total) * 100) : 0;
+      return {
+        "Group": m.projectGroup.ProjectGroupName,
+        "Date": m.MeetingDateTime.toISOString().slice(0, 10),
+        "Total Students": stats.total,
+        "Present": stats.present,
+        "Attendance %": pct + "%",
+      };
+    });
   } else {
     return Response.json({ error: "Unknown type" }, { status: 400 });
   }
