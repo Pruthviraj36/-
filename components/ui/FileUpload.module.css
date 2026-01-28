@@ -1,0 +1,57 @@
+/* File upload — drop area, micro-animation, progress */
+
+.dropZone {
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-xl);
+  text-align: center;
+  background: var(--color-bg);
+  transition: border-color var(--transition-hover), background var(--transition-hover);
+  cursor: pointer;
+}
+
+.dropZone:hover,
+.dropZone--active {
+  border-color: var(--color-accent);
+  background: var(--color-primary-light);
+}
+
+.dropZone--disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.input {
+  position: absolute;
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.hint {
+  font-size: var(--font-size-sm);
+  color: var(--color-muted);
+  margin-top: var(--space-xs);
+}
+
+.progress {
+  height: 4px;
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-top: var(--space-md);
+}
+
+.progressBar {
+  height: 100%;
+  background: var(--color-accent);
+  transition: width 0.2s ease;
+}
+
+.fileList {
+  margin-top: var(--space-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}

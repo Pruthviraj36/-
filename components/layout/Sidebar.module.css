@@ -1,0 +1,221 @@
+/* Sidebar — vertical nav, grouped items, floating active pill, collapsible */
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft-2);
+  transition: width var(--transition-hover);
+  position: relative;
+  z-index: var(--z-sticky);
+}
+
+.sidebar--collapsed {
+  width: 64px;
+}
+
+.sidebar--expanded {
+  width: 260px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-lg);
+  min-height: 64px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.brandLogo {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-soft);
+}
+
+.brandText {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-heading);
+  color: var(--color-primary);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sidebar--collapsed .brandText {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+.nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-sm);
+}
+
+.navGroup {
+  margin-bottom: var(--space-md);
+}
+
+.navGroupLabel {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-muted);
+  padding: var(--space-xs) var(--space-sm);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sidebar--collapsed .navGroupLabel {
+  opacity: 0;
+  height: 0;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+.navItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  margin-bottom: 2px;
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  transition: color var(--transition-hover), background var(--transition-hover);
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  width: 100%;
+  font: inherit;
+  text-align: left;
+}
+
+.navItem:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.navItem:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Floating 3D pill for active */
+.navItem--active {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.navItem--active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 24px;
+  background: var(--color-primary);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  box-shadow: 2px 0 6px rgba(15, 76, 129, 0.35);
+}
+
+.navItemIcon {
+  flex-shrink: 0;
+  color: inherit;
+}
+
+.sidebar--collapsed .navItem {
+  justify-content: center;
+  padding: var(--space-md);
+}
+
+.sidebar--collapsed .navItem span:not(.navItemIcon) {
+  display: none;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-md);
+  border-top: 1px solid var(--color-border);
+  background: transparent;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: color var(--transition-hover), background var(--transition-hover);
+}
+
+.toggle:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.toggle:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+/* Mobile: bottom nav */
+@media (max-width: 767px) {
+  .sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: auto;
+    flex-direction: row;
+    width: 100% !important;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .brand,
+  .navGroupLabel,
+  .toggle {
+    display: none;
+  }
+
+  .nav {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    padding: var(--space-sm);
+  }
+
+  .navGroup {
+    display: contents;
+    margin: 0;
+  }
+
+  .navItem {
+    flex-direction: column;
+    gap: var(--space-xs);
+    padding: var(--space-sm);
+    margin: 0;
+    border-radius: var(--radius-sm);
+  }
+
+  .navItem--active::before {
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+    width: 24px;
+    height: 4px;
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  }
+
+  .navItem span:not(.navItemIcon) {
+    font-size: var(--font-size-xs);
+  }
+}

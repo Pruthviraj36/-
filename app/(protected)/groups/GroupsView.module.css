@@ -1,0 +1,3 @@
+.wrap { display: flex; flex-direction: column; gap: var(--space-lg); }
+.toolbar { display: flex; justify-content: flex-end; }
+.form { display: flex; flex-direction: column; gap: var(--space-md); }

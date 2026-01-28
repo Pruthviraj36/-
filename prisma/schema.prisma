@@ -1,0 +1,224 @@
+// Student Project Management System - Prisma Schema
+// MySQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ============ ENUMS ============
+
+enum StaffRole {
+  Admin
+  Faculty
+}
+
+enum ProjectGroupStatus {
+  Draft
+  Pending
+  Approved
+  Rejected
+}
+
+enum MeetingStatus {
+  Scheduled
+  Completed
+  Cancelled
+  NoShow
+}
+
+enum DocumentType {
+  Proposal
+  Report
+  Other
+}
+
+// ============ MASTERS ============
+
+model ProjectType {
+  ProjectTypeID   Int      @id @default(autoincrement())
+  ProjectTypeName String
+  Description     String?  @db.Text
+  Created         DateTime @default(now())
+  Modified        DateTime @updatedAt
+
+  projectGroups ProjectGroup[]
+}
+
+model Staff {
+  StaffID     Int       @id @default(autoincrement())
+  StaffName   String
+  Phone       String?
+  Email       String    @unique
+  Password    String
+  Role        StaffRole @default(Faculty)
+  Description String?   @db.Text
+  Created     DateTime  @default(now())
+  Modified    DateTime  @updatedAt
+
+  // As guide
+  guidedGroups       ProjectGroup[]
+  guidedMeetings     ProjectMeeting[]
+  // As convener
+  convenedGroups     ProjectGroup[]     @relation("ConvenerGroups")
+  // As expert
+  expertGroups       ProjectGroup[]     @relation("ExpertGroups")
+  // Document uploads
+  projectDocuments   ProjectDocument[]
+  meetingStatusBy    ProjectMeeting[]   @relation("MeetingStatusByStaff")
+}
+
+model AcademicYear {
+  AcademicYearID Int      @id @default(autoincrement())
+  YearName       String   // e.g. "2024-25"
+  StartDate      DateTime
+  EndDate        DateTime
+  IsActive       Boolean  @default(false)
+  Description    String?  @db.Text
+  Created        DateTime @default(now())
+  Modified       DateTime @updatedAt
+
+  departments   Department[]
+  projectGroups ProjectGroup[]
+  students      Student[]
+}
+
+model Department {
+  DepartmentID   Int      @id @default(autoincrement())
+  DepartmentName String
+  AcademicYearID Int
+  Description    String?  @db.Text
+  Created        DateTime @default(now())
+  Modified       DateTime @updatedAt
+
+  academicYear AcademicYear @relation(fields: [AcademicYearID], references: [AcademicYearID], onDelete: Cascade)
+  students     Student[]
+}
+
+// ============ STUDENT & GROUPS ============
+
+model Student {
+  StudentID     Int      @id @default(autoincrement())
+  StudentName   String
+  Phone         String?
+  Email         String   @unique
+  Password      String   // For login
+  DepartmentID  Int?
+  AcademicYearID Int?
+  Description   String?  @db.Text
+  Created       DateTime @default(now())
+  Modified      DateTime @updatedAt
+
+  department    Department?         @relation(fields: [DepartmentID], references: [DepartmentID])
+  academicYear  AcademicYear?       @relation(fields: [AcademicYearID], references: [AcademicYearID])
+  groupMembers  ProjectGroupMember[]
+  attendances   ProjectMeetingAttendance[]
+  documents     ProjectDocument[]
+}
+
+model ProjectGroup {
+  ProjectGroupID     Int               @id @default(autoincrement())
+  ProjectGroupName   String
+  ProjectTypeID      Int
+  GuideStaffID       Int
+  ProjectTitle       String?           @db.Text
+  ProjectArea        String?           @db.Text
+  ProjectDescription String?           @db.LongText
+  AverageCPI         Decimal?          @db.Decimal(4, 2)
+  ConvenerStaffID    Int?
+  ExpertStaffID      Int?
+  Status             ProjectGroupStatus @default(Draft)
+  AcademicYearID     Int?
+  Description        String?           @db.Text
+  Created            DateTime          @default(now())
+  Modified           DateTime          @updatedAt
+
+  projectType     ProjectType   @relation(fields: [ProjectTypeID], references: [ProjectTypeID])
+  guide           Staff         @relation(fields: [GuideStaffID], references: [StaffID])
+  convener        Staff?        @relation("ConvenerGroups", fields: [ConvenerStaffID], references: [StaffID])
+  expert          Staff?        @relation("ExpertGroups", fields: [ExpertStaffID], references: [StaffID])
+  academicYear    AcademicYear? @relation(fields: [AcademicYearID], references: [AcademicYearID])
+  members         ProjectGroupMember[]
+  meetings        ProjectMeeting[]
+  documents       ProjectDocument[]
+}
+
+model ProjectGroupMember {
+  ProjectGroupMemberID Int      @id @default(autoincrement())
+  ProjectGroupID       Int
+  StudentID            Int
+  IsGroupLeader        Boolean  @default(false)
+  StudentCGPA          Decimal? @db.Decimal(4, 2)
+  Description          String?  @db.Text
+  Created              DateTime @default(now())
+  Modified             DateTime @updatedAt
+
+  projectGroup ProjectGroup @relation(fields: [ProjectGroupID], references: [ProjectGroupID], onDelete: Cascade)
+  student      Student      @relation(fields: [StudentID], references: [StudentID], onDelete: Cascade)
+
+  @@unique([ProjectGroupID, StudentID])
+}
+
+// ============ MEETINGS ============
+
+model ProjectMeeting {
+  ProjectMeetingID       Int          @id @default(autoincrement())
+  ProjectGroupID         Int
+  GuideStaffID           Int
+  MeetingDateTime        DateTime
+  MeetingPurpose         String?      @db.Text
+  MeetingLocation        String?      @db.Text
+  MeetingNotes           String?      @db.Text
+  MeetingStatus          MeetingStatus @default(Scheduled)
+  MeetingStatusDescription String?    @db.Text
+  MeetingStatusDatetime DateTime?
+  Description            String?     @db.Text
+  Created                DateTime    @default(now())
+  Modified               DateTime    @updatedAt
+  StatusUpdatedByStaffID Int?
+
+  projectGroup  ProjectGroup   @relation(fields: [ProjectGroupID], references: [ProjectGroupID], onDelete: Cascade)
+  guide         Staff          @relation(fields: [GuideStaffID], references: [StaffID])
+  statusBy      Staff?         @relation("MeetingStatusByStaff", fields: [StatusUpdatedByStaffID], references: [StaffID])
+  attendances   ProjectMeetingAttendance[]
+}
+
+model ProjectMeetingAttendance {
+  ProjectMeetingAttendanceID Int      @id @default(autoincrement())
+  ProjectMeetingID           Int
+  StudentID                  Int
+  IsPresent                  Boolean  @default(false)
+  AttendanceRemarks          String?  @db.Text
+  Description                String?  @db.Text
+  Created                    DateTime @default(now())
+  Modified                   DateTime @updatedAt
+
+  meeting ProjectMeeting @relation(fields: [ProjectMeetingID], references: [ProjectMeetingID], onDelete: Cascade)
+  student Student        @relation(fields: [StudentID], references: [StudentID], onDelete: Cascade)
+
+  @@unique([ProjectMeetingID, StudentID])
+}
+
+// ============ DOCUMENTS ============
+
+model ProjectDocument {
+  ProjectDocumentID Int          @id @default(autoincrement())
+  ProjectGroupID    Int
+  DocumentType      DocumentType @default(Other)
+  FileName          String
+  FilePath          String      // relative path in uploads/
+  MimeType          String?
+  UploadedByStaffID Int?
+  UploadedByStudentID Int?
+  Description       String?     @db.Text
+  Created           DateTime    @default(now())
+  Modified          DateTime    @updatedAt
+
+  projectGroup ProjectGroup @relation(fields: [ProjectGroupID], references: [ProjectGroupID], onDelete: Cascade)
+  staff        Staff?       @relation(fields: [UploadedByStaffID], references: [StaffID])
+  student      Student?     @relation(fields: [UploadedByStudentID], references: [StudentID])
+}
