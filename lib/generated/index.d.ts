@@ -13562,12 +13562,12 @@ export namespace Prisma {
 
   export type StudentWhereUniqueInput = Prisma.AtLeast<{
     StudentID?: number
+    Email?: string
     AND?: StudentWhereInput | StudentWhereInput[]
     OR?: StudentWhereInput[]
     NOT?: StudentWhereInput | StudentWhereInput[]
     StudentName?: StringFilter<"Student"> | string
     Phone?: StringNullableFilter<"Student"> | string | null
-    Email?: StringFilter<"Student"> | string
     Password?: StringFilter<"Student"> | string
     DepartmentID?: IntNullableFilter<"Student"> | number | null
     AcademicYearID?: IntNullableFilter<"Student"> | number | null
@@ -13579,7 +13579,7 @@ export namespace Prisma {
     groupMembers?: ProjectGroupMemberListRelationFilter
     attendances?: ProjectMeetingAttendanceListRelationFilter
     documents?: ProjectDocumentListRelationFilter
-  }, "StudentID">
+  }, "StudentID" | "Email">
 
   export type StudentOrderByWithAggregationInput = {
     StudentID?: SortOrder

@@ -106,7 +106,7 @@ model Student {
   StudentID      Int      @id @default(autoincrement())
   StudentName    String
   Phone          String?
-  Email          String
+  Email          String   @unique
   Password       String // For login
   DepartmentID   Int?
   AcademicYearID Int?

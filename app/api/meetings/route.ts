@@ -7,6 +7,7 @@ export async function GET(req: NextRequest) {
   const role = (session.user as { role?: string }).role;
   const uid = (session.user as { uid?: string }).uid;
   const groupId = req.nextUrl.searchParams.get("groupId");
+  console.log(`[API/Meetings] GET called by ${role} (${uid})`);
 
   const include = {
     projectGroup: { select: { ProjectGroupID: true, ProjectGroupName: true, ProjectTitle: true } },

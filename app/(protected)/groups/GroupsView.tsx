@@ -53,7 +53,7 @@ export function GroupsView({ role }: { role: string }) {
         setLoading(false);
       }
     })();
-  }, [toast]);
+  }, [toast, canEdit]);
 
   async function create() {
     if (!form.ProjectGroupName || !form.ProjectTypeID || !form.GuideStaffID) {

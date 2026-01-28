@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  // output = "E:/SEM-6/AWT/Project/spms/lib/generated"
 }
 
 datasource db {

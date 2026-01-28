@@ -36,19 +36,21 @@ export function MeetingsView({ role }: { role: string }) {
       try {
         const [m, g, s] = await Promise.all([
           fetch("/api/meetings").then((r) => r.json()),
-          fetch("/api/groups").then((r) => r.json()),
-          fetch("/api/masters/staff").then((r) => r.json()),
+          canEdit ? fetch("/api/groups").then((r) => r.json()) : Promise.resolve([]),
+          canEdit ? fetch("/api/masters/staff").then((r) => r.json()) : Promise.resolve([]),
         ]);
         setList(Array.isArray(m) ? m : []);
-        setGroups([{ value: "", label: "Select group" }, ...(Array.isArray(g) ? g : []).map((x: { ProjectGroupID: number; ProjectGroupName: string }) => ({ value: String(x.ProjectGroupID), label: x.ProjectGroupName }))]);
-        setStaff([{ value: "", label: "Select guide" }, ...(Array.isArray(s) ? s : []).map((x: { StaffID: number; StaffName: string }) => ({ value: String(x.StaffID), label: x.StaffName }))]);
+        if (canEdit) {
+          setGroups([{ value: "", label: "Select group" }, ...(Array.isArray(g) ? g : []).map((x: { ProjectGroupID: number; ProjectGroupName: string }) => ({ value: String(x.ProjectGroupID), label: x.ProjectGroupName }))]);
+          setStaff([{ value: "", label: "Select guide" }, ...(Array.isArray(s) ? s : []).map((x: { StaffID: number; StaffName: string }) => ({ value: String(x.StaffID), label: x.StaffName }))]);
+        }
       } catch {
         toast.add("Failed to load meetings", "error");
       } finally {
         setLoading(false);
       }
     })();
-  }, [toast]);
+  }, [toast, canEdit]);
 
   async function create() {
     if (!form.ProjectGroupID || !form.GuideStaffID || !form.MeetingDateTime) {

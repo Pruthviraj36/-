@@ -13,6 +13,7 @@ export async function requireRole(allowed: string[]) {
   const s = await requireAuth();
   const r = (s.user as { role?: string }).role;
   if (!r || !allowed.includes(r)) {
+    console.warn(`[Auth] Role ${r} NOT in [${allowed.join(", ")}]`);
     throw new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: { "Content-Type": "application/json" } });
   }
   return s;

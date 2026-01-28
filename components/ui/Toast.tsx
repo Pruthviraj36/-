@@ -11,18 +11,22 @@ interface ToastItem {
   type: ToastType;
 }
 
-interface ToastContextValue {
-  toasts: ToastItem[];
+interface ToastActions {
   add: (message: string, type?: ToastType) => void;
   remove: (id: string) => void;
 }
 
-const ToastContext = createContext<ToastContextValue | null>(null);
+const ToastStateContext = createContext<ToastItem[]>([]);
+const ToastActionsContext = createContext<ToastActions | null>(null);
 
 export function useToast() {
-  const c = useContext(ToastContext);
-  if (!c) throw new Error("useToast must be used within ToastProvider");
-  return c;
+  const actions = useContext(ToastActionsContext);
+  if (!actions) throw new Error("useToast must be used within ToastProvider");
+  return actions;
+}
+
+export function useToasts() {
+  return useContext(ToastStateContext);
 }
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
@@ -38,40 +42,32 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     setToasts((p) => p.filter((t) => t.id !== id));
   }, []);
 
-  const value = useMemo(() => ({ toasts, add, remove }), [toasts, add, remove]);
+  const actions = useMemo(() => ({ add, remove }), [add, remove]);
 
   return (
-    <ToastContext.Provider value={value}>
-      {children}
-      <div className={styles.list} role="region" aria-label="Notifications">
-        {toasts.map((t) => (
-          <div
-            key={t.id}
-            className={`${styles.toast} ${styles[`toast--${t.type}`]}`}
-            role="alert"
-            onMouseEnter={() => { }}
-          >
-            <p className={styles.message}>{t.message}</p>
-            <button
-              type="button"
-              onClick={() => remove(t.id)}
-              style={{
-                position: "absolute",
-                top: 8,
-                right: 8,
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                opacity: 0.6,
-                fontSize: 12,
-              }}
-              aria-label="Dismiss"
+    <ToastActionsContext.Provider value={actions}>
+      <ToastStateContext.Provider value={toasts}>
+        {children}
+        <div className={styles.list} role="region" aria-label="Notifications">
+          {toasts.map((t) => (
+            <div
+              key={t.id}
+              className={`${styles.toast} ${styles[`toast--${t.type}`]}`}
+              role="alert"
             >
-              ×
-            </button>
-          </div>
-        ))}
-      </div>
-    </ToastContext.Provider>
+              <p className={styles.message}>{t.message}</p>
+              <button
+                type="button"
+                onClick={() => remove(t.id)}
+                className={styles.close}
+                aria-label="Dismiss"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      </ToastStateContext.Provider>
+    </ToastActionsContext.Provider>
   );
 }
