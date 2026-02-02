@@ -6,7 +6,6 @@ const prisma = new PrismaClient();
 async function main() {
   const password = await bcrypt.hash("password123", 10);
 
-  console.log("Seeding started...");
 
   // 1. Academic Years
   const ay1 = await prisma.academicYear.upsert({
@@ -170,7 +169,6 @@ async function main() {
     });
   }
 
-  console.log("Seeding finished successfully.");
 }
 
 main()

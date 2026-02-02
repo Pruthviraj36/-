@@ -31,9 +31,10 @@ export function MeetingsView({ role }: { role: string }) {
   const [fullGroups, setFullGroups] = useState<any[]>([]);
   const [staff, setStaff] = useState<{ value: string; label: string }[]>([]);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState<"create" | "detail" | null>(null);
+  const [modal, setModal] = useState<"create" | "detail" | "edit" | null>(null);
   const [selected, setSelected] = useState<Meeting | null>(null);
   const [form, setForm] = useState({ ProjectGroupID: "", GuideStaffID: "", MeetingDateTime: "", MeetingPurpose: "", MeetingLocation: "" });
+  const [editForm, setEditForm] = useState({ ProjectGroupID: "", GuideStaffID: "", MeetingDateTime: "", MeetingPurpose: "", MeetingLocation: "" });
   const toast = useToast();
   const canEdit = role === "admin" || role === "faculty";
 
@@ -117,6 +118,52 @@ export function MeetingsView({ role }: { role: string }) {
       setModal(null);
     } catch {
       toast.add("Failed to update status", "error");
+    }
+  }
+
+  async function saveDetails() {
+    if (!selected) return;
+    if (!editForm.ProjectGroupID || !editForm.GuideStaffID || !editForm.MeetingDateTime) {
+      toast.add("Group, guide and date/time required", "error");
+      return;
+    }
+    try {
+      const res = await fetch(`/api/meetings/${selected.ProjectMeetingID}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ProjectGroupID: Number(editForm.ProjectGroupID),
+          GuideStaffID: Number(editForm.GuideStaffID),
+          MeetingDateTime: editForm.MeetingDateTime,
+          MeetingPurpose: editForm.MeetingPurpose || null,
+          MeetingLocation: editForm.MeetingLocation || null,
+        }),
+      });
+      if (!res.ok) throw new Error();
+      toast.add("Meeting updated", "success");
+      setModal("detail");
+      load();
+      // Update selected with new values for better UI experience
+      const updated = await res.json();
+      setSelected(updated);
+    } catch {
+      toast.add("Failed to update meeting", "error");
+    }
+  }
+
+  async function deleteMeeting() {
+    if (!selected) return;
+    if (!window.confirm("Are you sure you want to delete this meeting?")) return;
+    try {
+      const res = await fetch(`/api/meetings/${selected.ProjectMeetingID}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error();
+      toast.add("Meeting deleted", "success");
+      setModal(null);
+      load();
+    } catch {
+      toast.add("Failed to delete meeting", "error");
     }
   }
 
@@ -251,8 +298,19 @@ export function MeetingsView({ role }: { role: string }) {
             </div>
 
             {canEdit && (
-              <div className={styles.actions} style={{ marginTop: "var(--space-md)", display: "flex", gap: "var(--space-sm)" }}>
+              <div className={styles.actions} style={{ marginTop: "var(--space-md)", display: "flex", gap: "var(--space-sm)", flexWrap: "wrap" }}>
+                <Button variant="secondary" size="sm" onClick={() => {
+                  setEditForm({
+                    ProjectGroupID: String(selected.ProjectGroupID),
+                    GuideStaffID: String(selected.GuideStaffID),
+                    MeetingDateTime: format(new Date(selected.MeetingDateTime), "yyyy-MM-dd'T'HH:mm"),
+                    MeetingPurpose: selected.MeetingPurpose || "",
+                    MeetingLocation: selected.MeetingLocation || "",
+                  });
+                  setModal("edit");
+                }}>Edit Details</Button>
                 <Button variant="secondary" size="sm" onClick={() => updateStatus("Completed")}>Mark Completed</Button>
+                <Button variant="danger" size="sm" onClick={deleteMeeting}>Delete Meeting</Button>
                 <Button variant="danger" size="sm" onClick={() => updateStatus("Cancelled")}>Cancel Meeting</Button>
               </div>
             )}
@@ -306,6 +364,15 @@ export function MeetingsView({ role }: { role: string }) {
             </div>
           </div>
         )}
+      </Modal>
+      <Modal open={modal === "edit" && !!selected} onClose={() => setModal("detail")} title="Edit Meeting" footer={<><Button variant="secondary" onClick={() => setModal("detail")}>Cancel</Button><Button variant="primary" onClick={saveDetails}>Save Changes</Button></>}>
+        <div className={styles.form}>
+          <Select label="Project group" options={groups} value={editForm.ProjectGroupID} onChange={(e) => setEditForm((f) => ({ ...f, ProjectGroupID: e.target.value }))} />
+          <Select label="Guide" options={staff} value={editForm.GuideStaffID} onChange={(e) => setEditForm((f) => ({ ...f, GuideStaffID: e.target.value }))} />
+          <Input label="Date & time" type="datetime-local" value={editForm.MeetingDateTime} onChange={(e) => setEditForm((f) => ({ ...f, MeetingDateTime: e.target.value }))} />
+          <Input label="Purpose" value={editForm.MeetingPurpose} onChange={(e) => setEditForm((f) => ({ ...f, MeetingPurpose: e.target.value }))} />
+          <Input label="Location" value={editForm.MeetingLocation} onChange={(e) => setEditForm((f) => ({ ...f, MeetingLocation: e.target.value }))} />
+        </div>
       </Modal>
     </div>
   );
