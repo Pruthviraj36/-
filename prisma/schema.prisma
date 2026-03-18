@@ -7,7 +7,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -128,7 +128,7 @@ model ProjectGroup {
   GuideStaffID       Int
   ProjectTitle       String?           @db.Text
   ProjectArea        String?           @db.Text
-  ProjectDescription String?           @db.LongText
+  ProjectDescription String?           @db.Text
   AverageCPI         Decimal?          @db.Decimal(4, 2)
   ConvenerStaffID    Int?
   ExpertStaffID      Int?
