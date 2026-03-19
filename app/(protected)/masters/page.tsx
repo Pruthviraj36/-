@@ -9,7 +9,7 @@ export default async function MastersPage() {
   if (role !== "admin") redirect("/dashboard");
   return (
     <>
-      <h1 className="h2" style={{ marginBottom: "var(--space-lg)" }}>Masters</h1>
+      <h1 className="h2 mb-lg">Masters</h1>
       <MastersView />
     </>
   );

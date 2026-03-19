@@ -8,20 +8,28 @@ export default async function DashboardPage() {
   const role = (session?.user as { role?: string })?.role ?? "student";
   const uid = (session?.user as { uid?: string })?.uid;
 
-  let cards: { label: string; value: string | number; accent?: "primary" | "success" | "danger" }[] = [];
+  let cards: {
+    label: string;
+    value: string | number;
+    accent?: "primary" | "success" | "danger";
+  }[] = [];
 
   if (role === "admin") {
-    const [totalProjects, pending, staffCount, meetingsToday] = await Promise.all([
-      prisma.projectGroup.count(),
-      prisma.projectGroup.count({ where: { Status: "Pending" } }),
-      prisma.staff.count(),
-      prisma.projectMeeting.count({
-        where: {
-          MeetingDateTime: { gte: new Date(new Date().setHours(0, 0, 0, 0)), lt: new Date(new Date().setHours(23, 59, 59, 999)) },
-          MeetingStatus: "Scheduled",
-        },
-      }),
-    ]);
+    const [totalProjects, pending, staffCount, meetingsToday] =
+      await Promise.all([
+        prisma.projectGroup.count(),
+        prisma.projectGroup.count({ where: { Status: "Pending" } }),
+        prisma.staff.count(),
+        prisma.projectMeeting.count({
+          where: {
+            MeetingDateTime: {
+              gte: new Date(new Date().setHours(0, 0, 0, 0)),
+              lt: new Date(new Date().setHours(23, 59, 59, 999)),
+            },
+            MeetingStatus: "Scheduled",
+          },
+        }),
+      ]);
     cards = [
       { label: "Total projects", value: totalProjects, accent: "primary" },
       { label: "Pending approvals", value: pending, accent: "danger" },
@@ -35,11 +43,16 @@ export default async function DashboardPage() {
       prisma.projectMeeting.count({
         where: {
           GuideStaffID: staffId,
-          MeetingDateTime: { gte: new Date(new Date().setHours(0, 0, 0, 0)), lt: new Date(new Date().setHours(23, 59, 59, 999)) },
+          MeetingDateTime: {
+            gte: new Date(new Date().setHours(0, 0, 0, 0)),
+            lt: new Date(new Date().setHours(23, 59, 59, 999)),
+          },
           MeetingStatus: "Scheduled",
         },
       }),
-      prisma.projectGroup.count({ where: { GuideStaffID: staffId, Status: "Pending" } }),
+      prisma.projectGroup.count({
+        where: { GuideStaffID: staffId, Status: "Pending" },
+      }),
     ]);
     cards = [
       { label: "Assigned projects", value: assigned, accent: "primary" },
@@ -50,15 +63,24 @@ export default async function DashboardPage() {
     const studentId = Number(uid);
     const member = await prisma.projectGroupMember.findFirst({
       where: { StudentID: studentId },
-      include: { projectGroup: { include: { guide: { select: { StaffName: true } } } } },
+      include: {
+        projectGroup: { include: { guide: { select: { StaffName: true } } } },
+      },
     });
     const meetingsCount = member
       ? await prisma.projectMeeting.count({
-          where: { ProjectGroupID: member.ProjectGroupID, MeetingStatus: "Scheduled", MeetingDateTime: { gte: new Date() } },
+          where: {
+            ProjectGroupID: member.ProjectGroupID,
+            MeetingStatus: "Scheduled",
+            MeetingDateTime: { gte: new Date() },
+          },
         })
       : 0;
     cards = [
-      { label: "My group", value: member?.projectGroup.ProjectGroupName ?? "—" },
+      {
+        label: "My group",
+        value: member?.projectGroup.ProjectGroupName ?? "—",
+      },
       { label: "Upcoming meetings", value: meetingsCount, accent: "success" },
       { label: "Project status", value: member?.projectGroup.Status ?? "—" },
     ];
@@ -66,10 +88,8 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <h1 className="h2" style={{ marginBottom: "var(--space-lg)" }}>
-        Dashboard
-      </h1>
-      <DashboardView cards={cards} role={role} />
+      <h1 className="h2 mb-lg">Dashboard</h1>
+      <DashboardView cards={cards} />
     </>
   );
 }

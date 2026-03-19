@@ -11,7 +11,7 @@ export async function PUT(
   const id = Number((await params).id);
   const b = await req.json();
 
-  const data: Record<string, any> = {};
+  const data: Record<string, unknown> = {};
   if (b.StudentName != null) data.StudentName = b.StudentName;
   if (b.Phone != null) data.Phone = b.Phone;
   if (b.Email != null) data.Email = b.Email;
@@ -27,14 +27,18 @@ export async function PUT(
     where: { StudentID: id },
     data,
   });
-  const { Password: _p, ...out } = updated;
+  const out = { ...updated } as Omit<typeof updated, "Password"> & {
+    Password?: string;
+  };
+  delete out.Password;
   return Response.json(out);
 }
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  void req;
   await requireRole(["admin", "faculty"]);
   const id = Number((await params).id);
   await prisma.student.delete({ where: { StudentID: id } });

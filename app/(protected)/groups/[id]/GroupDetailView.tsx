@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -41,7 +40,6 @@ export function GroupDetailView({
   group: G;
   role: string;
 }) {
-  const router = useRouter();
   const [group, setGroup] = useState(initialGroup);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
@@ -51,7 +49,7 @@ export function GroupDetailView({
     Status: group.Status,
   });
   const [students, setStudents] = useState<
-    { StudentID: number; StudentName: string }[]
+    { StudentID: number; StudentName: string; Email?: string }[]
   >([]);
   const [selectedStudent, setSelectedStudent] = useState("");
   const toast = useToast();
@@ -84,7 +82,7 @@ export function GroupDetailView({
   async function addMember() {
     if (!selectedStudent) return;
     try {
-      const res = await fetch(`/api/groups/${group.ProjectGroupID}/members`, {
+      await fetch(`/api/groups/${group.ProjectGroupID}/members`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -104,7 +102,7 @@ export function GroupDetailView({
               student: {
                 StudentID: student.StudentID,
                 StudentName: student.StudentName,
-                Email: (student as any).Email || "",
+                Email: student.Email || "",
               },
               IsGroupLeader: prev.members.length === 0,
             },
@@ -264,7 +262,7 @@ export function GroupDetailView({
                   size="sm"
                   icon={<IconEdit size={16} />}
                   onClick={() => setEditing(true)}
-                  style={{ marginTop: "1rem" }}
+                  className={styles.editBtn}
                 >
                   Edit Details
                 </Button>
@@ -313,10 +311,7 @@ export function GroupDetailView({
               ))}
             </ul>
             {canEdit && (
-              <div
-                className={styles.addMember}
-                style={{ marginTop: "1rem", display: "flex", gap: "0.5rem" }}
-              >
+              <div className={styles.addMember}>
                 <Select
                   options={[
                     { value: "", label: "Add student..." },
@@ -348,10 +343,10 @@ export function GroupDetailView({
           </div>
         </section>
 
-        <section className={styles.section} style={{ gridColumn: "1 / -1" }}>
+        <section className={`${styles.section} ${styles.sectionFull}`}>
           <h2 className="h4">Documents</h2>
           {canEdit && (
-            <div style={{ marginBottom: "1.5rem" }}>
+            <div className={styles.uploadWrap}>
               <FileUpload onSelect={onUpload} hint="Proposal, reports, etc." />
             </div>
           )}

@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth, requireRole } from "@/lib/api-auth";
 
-export async function GET(_req: NextRequest) {
+export async function GET() {
   const session = await requireAuth();
   const role = (session.user as { role?: string }).role;
   const uid = (session.user as { uid?: string }).uid;

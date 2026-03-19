@@ -84,6 +84,173 @@
   gap: var(--space-md);
 }
 
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.notesSection {
+  margin-top: var(--space-md);
+}
+
+.sectionLabel {
+  display: block;
+  margin-bottom: var(--space-xs);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-sm);
+}
+
+.notesEditor {
+  display: flex;
+  gap: var(--space-xs);
+  align-items: flex-start;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 88px;
+  resize: vertical;
+  font: inherit;
+  padding: var(--space-sm);
+  border: 1px solid color-mix(in srgb, var(--color-border) 78%, #fff 22%);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+  transition:
+    border-color var(--transition-hover),
+    box-shadow var(--transition-hover),
+    background var(--transition-hover);
+}
+
+.textarea:hover {
+  background: var(--color-surface);
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow:
+    0 0 0 3px var(--color-primary-light),
+    0 6px 16px rgba(15, 76, 129, 0.1);
+  background: var(--color-surface);
+}
+
+.notesSaveButton {
+  height: fit-content;
+}
+
+.notesReadOnly {
+  white-space: pre-wrap;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.actions {
+  margin-top: var(--space-md);
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.attendance {
+  margin-top: var(--space-lg);
+}
+
+.attList {
+  list-style: none;
+  padding: 0;
+  margin-top: var(--space-sm);
+}
+
+.attItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-xs) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.attTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.attToggle {
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  transition:
+    background var(--transition-hover),
+    color var(--transition-hover),
+    border-color var(--transition-hover),
+    transform var(--transition-press);
+}
+
+.attToggle:hover {
+  border-color: color-mix(
+    in srgb,
+    var(--color-accent) 25%,
+    var(--color-border) 75%
+  );
+}
+
+.attToggle:active {
+  transform: translateY(1px);
+}
+
+.attTogglePresent {
+  background: var(--color-success);
+  border-color: color-mix(in srgb, var(--color-success) 70%, #fff 30%);
+  color: #ffffff;
+}
+
+.attStatus {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.attStatusPresent {
+  color: var(--color-success);
+}
+
+.attStatusAbsent {
+  color: var(--color-danger);
+}
+
+.remarksInput {
+  width: 100%;
+  font-size: var(--font-size-xs);
+  padding: 6px 8px;
+  border: 1px solid color-mix(in srgb, var(--color-border) 78%, #fff 22%);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+  transition:
+    border-color var(--transition-hover),
+    box-shadow var(--transition-hover),
+    background var(--transition-hover);
+}
+
+.remarksInput:hover {
+  background: var(--color-surface);
+}
+
+.remarksInput:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+  background: var(--color-surface);
+}
+
+.remarksText {
+  font-size: var(--font-size-xs);
+}
+
 @media (max-width: 767px) {
   .summaryPill {
     align-self: flex-start;
@@ -95,5 +262,13 @@
 
   .search {
     min-width: 100%;
+  }
+
+  .notesEditor {
+    flex-direction: column;
+  }
+
+  .notesSaveButton {
+    width: 100%;
   }
 }

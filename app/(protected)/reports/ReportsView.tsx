@@ -92,12 +92,11 @@ export function ReportsView({ role }: { role: string }) {
   const [type, setType] = useState<ReportType>("projects-by-type");
   const [data, setData] = useState<unknown[]>([]);
   const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const toast = useToast();
 
   useEffect(() => {
     if (role !== "admin" && role !== "faculty") return;
-    setLoading(true);
     fetch(`/api/reports?type=${type}`)
       .then((r) => r.json())
       .then((d) => setData(Array.isArray(d) ? d : []))
@@ -184,7 +183,10 @@ export function ReportsView({ role }: { role: string }) {
               label: o.label,
             }))}
             value={type}
-            onChange={(e) => setType(e.target.value as ReportType)}
+            onChange={(e) => {
+              setLoading(true);
+              setType(e.target.value as ReportType);
+            }}
           />
           <Input
             label="Search"

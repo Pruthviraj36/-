@@ -17,60 +17,93 @@ type Tab =
   | "departments"
   | "students";
 
+interface ProjectTypeMaster {
+  ProjectTypeID: number;
+  ProjectTypeName: string;
+  Description: string | null;
+}
+
+interface StaffMaster {
+  StaffID: number;
+  StaffName: string;
+  Email: string;
+  Role: string;
+}
+
+interface AcademicYearMaster {
+  AcademicYearID: number;
+  YearName: string;
+  StartDate: string;
+  EndDate: string;
+  IsActive: boolean;
+}
+
+interface DepartmentMaster {
+  DepartmentID: number;
+  DepartmentName: string;
+  AcademicYearID: number;
+  academicYear?: { YearName: string };
+}
+
+interface StudentMaster {
+  StudentID: number;
+  StudentName: string;
+  Email: string;
+  Phone: string | null;
+  DepartmentID: number;
+  AcademicYearID: number;
+  Description: string | null;
+}
+
+interface MasterFormState {
+  ProjectTypeName?: string;
+  Description?: string;
+  StaffName?: string;
+  Email?: string;
+  Password?: string;
+  Role?: string;
+  YearName?: string;
+  StartDate?: string;
+  EndDate?: string;
+  IsActive?: boolean;
+  DepartmentName?: string;
+  AcademicYearID?: string;
+  StudentName?: string;
+  Phone?: string;
+  DepartmentID?: string;
+}
+
 export function MastersView() {
   const [tab, setTab] = useState<Tab>("project-types");
   const [search, setSearch] = useState("");
-  const [pt, setPt] = useState<
-    {
-      ProjectTypeID: number;
-      ProjectTypeName: string;
-      Description: string | null;
-    }[]
-  >([]);
-  const [staff, setStaff] = useState<
-    { StaffID: number; StaffName: string; Email: string; Role: string }[]
-  >([]);
-  const [ay, setAy] = useState<
-    {
-      AcademicYearID: number;
-      YearName: string;
-      StartDate: string;
-      EndDate: string;
-      IsActive: boolean;
-    }[]
-  >([]);
-  const [depts, setDepts] = useState<
-    {
-      DepartmentID: number;
-      DepartmentName: string;
-      AcademicYearID: number;
-      academicYear?: { YearName: string };
-    }[]
-  >([]);
-  const [students, setStudents] = useState<any[]>([]);
+  const [pt, setPt] = useState<ProjectTypeMaster[]>([]);
+  const [staff, setStaff] = useState<StaffMaster[]>([]);
+  const [ay, setAy] = useState<AcademicYearMaster[]>([]);
+  const [depts, setDepts] = useState<DepartmentMaster[]>([]);
+  const [students, setStudents] = useState<StudentMaster[]>([]);
   const [modal, setModal] = useState<
     "pt" | "staff" | "ay" | "dept" | "student" | null
   >(null);
-  const [form, setForm] = useState<Record<string, any>>({});
+  const [form, setForm] = useState<MasterFormState>({});
   const [editId, setEditId] = useState<number | null>(null);
   const toast = useToast();
 
   function load() {
     fetch("/api/masters/project-types")
       .then((r) => r.json())
-      .then((d) => setPt(Array.isArray(d) ? d : []));
+      .then((d) => setPt(Array.isArray(d) ? (d as ProjectTypeMaster[]) : []));
     fetch("/api/masters/staff")
       .then((r) => r.json())
-      .then((d) => setStaff(Array.isArray(d) ? d : []));
+      .then((d) => setStaff(Array.isArray(d) ? (d as StaffMaster[]) : []));
     fetch("/api/masters/academic-years")
       .then((r) => r.json())
-      .then((d) => setAy(Array.isArray(d) ? d : []));
+      .then((d) => setAy(Array.isArray(d) ? (d as AcademicYearMaster[]) : []));
     fetch("/api/masters/departments")
       .then((r) => r.json())
-      .then((d) => setDepts(Array.isArray(d) ? d : []));
+      .then((d) => setDepts(Array.isArray(d) ? (d as DepartmentMaster[]) : []));
     fetch("/api/masters/students")
       .then((r) => r.json())
-      .then((d) => setStudents(Array.isArray(d) ? d : []));
+      .then((d) => setStudents(Array.isArray(d) ? (d as StudentMaster[]) : []));
   }
 
   useEffect(() => {
@@ -168,10 +201,20 @@ export function MastersView() {
 
   async function saveStaff() {
     try {
-      const body: Record<string, any> = {
+      const body: {
+        StaffName: string;
+        Email: string;
+        Role: string;
+        Password?: string;
+      } = {
         StaffName: form.StaffName,
         Email: form.Email,
         Role: form.Role,
+      } as {
+        StaffName: string;
+        Email: string;
+        Role: string;
+        Password?: string;
       };
       if (form.Password) body.Password = form.Password;
       if (!editId && !form.Password) {
@@ -301,7 +344,7 @@ export function MastersView() {
     }
   }
 
-  const ptCols: Column<any>[] = [
+  const ptCols: Column<ProjectTypeMaster>[] = [
     { key: "ProjectTypeName", header: "Name", mobileLabel: "Name" },
     {
       key: "Description",
@@ -327,7 +370,7 @@ export function MastersView() {
     },
   ];
 
-  const staffCols: Column<any>[] = [
+  const staffCols: Column<StaffMaster>[] = [
     { key: "StaffName", header: "Name", mobileLabel: "Name" },
     { key: "Email", header: "Email", mobileLabel: "Email" },
     { key: "Role", header: "Role", mobileLabel: "Role" },
@@ -349,7 +392,7 @@ export function MastersView() {
     },
   ];
 
-  const ayCols: Column<any>[] = [
+  const ayCols: Column<AcademicYearMaster>[] = [
     { key: "YearName", header: "Year", mobileLabel: "Year" },
     {
       key: "StartDate",
@@ -387,7 +430,7 @@ export function MastersView() {
     },
   ];
 
-  const deptCols: Column<any>[] = [
+  const deptCols: Column<DepartmentMaster>[] = [
     { key: "DepartmentName", header: "Department", mobileLabel: "Dept" },
     {
       key: "YearName",
@@ -413,7 +456,7 @@ export function MastersView() {
     },
   ];
 
-  const studentCols: Column<any>[] = [
+  const studentCols: Column<StudentMaster>[] = [
     { key: "StudentName", header: "Name", mobileLabel: "Name" },
     { key: "Email", header: "Email", mobileLabel: "Email" },
     {
@@ -770,14 +813,7 @@ export function MastersView() {
             value={form.EndDate}
             onChange={(e) => setForm({ ...form, EndDate: e.target.value })}
           />
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "var(--space-sm)",
-              marginTop: "var(--space-sm)",
-            }}
-          >
+          <div className={styles.checkboxRow}>
             <input
               type="checkbox"
               id="ay-active"

@@ -35,6 +35,9 @@ body {
 .text-small {
   font-size: var(--font-size-sm);
 }
+.mb-lg {
+  margin-bottom: var(--space-lg);
+}
 
 /* Visually hidden but accessible */
 .sr-only {

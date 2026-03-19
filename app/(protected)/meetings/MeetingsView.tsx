@@ -374,8 +374,6 @@ export function MeetingsView({ role }: { role: string }) {
     });
   }
 
-  if (loading) return <p className="text-muted">Loading...</p>;
-
   const q = search.trim().toLowerCase();
   const filtered = list.filter((m) => {
     if (!q) return true;
@@ -481,6 +479,7 @@ export function MeetingsView({ role }: { role: string }) {
             placeholder="Search by group, guide, purpose, status, or date"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            disabled={loading}
           />
         </div>
         {canEdit && (
@@ -488,6 +487,7 @@ export function MeetingsView({ role }: { role: string }) {
             variant="primary"
             icon={<IconPlus size={18} />}
             onClick={() => setModal("create")}
+            disabled={loading}
           >
             Add meeting
           </Button>
@@ -499,6 +499,9 @@ export function MeetingsView({ role }: { role: string }) {
         data={filtered}
         keyField="ProjectMeetingID"
         emptyMessage={q ? "No meetings match your search" : "No meetings yet"}
+        loading={loading}
+        loadingRows={6}
+        loadingMessage="Loading meetings..."
         onRowClick={(r) => {
           setSelected(r);
           setModal("detail");
@@ -591,29 +594,12 @@ export function MeetingsView({ role }: { role: string }) {
               <strong>Status:</strong> {selected.MeetingStatus}
             </p>
 
-            <div style={{ marginTop: "var(--space-md)" }}>
-              <label
-                style={{
-                  display: "block",
-                  marginBottom: "var(--space-xs)",
-                  fontWeight: 500,
-                  fontSize: "var(--font-size-sm)",
-                }}
-              >
-                Meeting Notes
-              </label>
+            <div className={styles.notesSection}>
+              <label className={styles.sectionLabel}>Meeting Notes</label>
               {canEdit ? (
-                <div style={{ display: "flex", gap: "var(--space-xs)" }}>
+                <div className={styles.notesEditor}>
                   <textarea
                     className={styles.textarea}
-                    style={{
-                      width: "100%",
-                      padding: "8px",
-                      borderRadius: "4px",
-                      border: "1px solid var(--color-border)",
-                      minHeight: "80px",
-                      font: "inherit",
-                    }}
                     value={selected.MeetingNotes || ""}
                     onChange={(e) =>
                       setSelected((prev) =>
@@ -625,33 +611,20 @@ export function MeetingsView({ role }: { role: string }) {
                   <Button
                     variant="secondary"
                     onClick={saveNotes}
-                    style={{ height: "fit-content" }}
+                    className={styles.notesSaveButton}
                   >
                     Save
                   </Button>
                 </div>
               ) : (
-                <p
-                  style={{
-                    whiteSpace: "pre-wrap",
-                    color: "var(--color-text-muted)",
-                  }}
-                >
+                <p className={styles.notesReadOnly}>
                   {selected.MeetingNotes || "No notes."}
                 </p>
               )}
             </div>
 
             {canEdit && (
-              <div
-                className={styles.actions}
-                style={{
-                  marginTop: "var(--space-md)",
-                  display: "flex",
-                  gap: "var(--space-sm)",
-                  flexWrap: "wrap",
-                }}
-              >
+              <div className={styles.actions}>
                 <Button
                   variant="secondary"
                   size="sm"
@@ -691,40 +664,15 @@ export function MeetingsView({ role }: { role: string }) {
               </div>
             )}
 
-            <div
-              className={styles.attendance}
-              style={{ marginTop: "var(--space-lg)" }}
-            >
+            <div className={styles.attendance}>
               <h3 className="h4">Attendance</h3>
               {attendanceList.length === 0 ? (
                 <p className="text-small text-muted">No members in group.</p>
               ) : (
-                <ul
-                  className={styles.attList}
-                  style={{
-                    listStyle: "none",
-                    padding: 0,
-                    marginTop: "var(--space-sm)",
-                  }}
-                >
+                <ul className={styles.attList}>
                   {attendanceList.map((a: AttendanceEntry) => (
-                    <li
-                      key={a.student.StudentID}
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "4px",
-                        padding: "var(--space-xs) 0",
-                        borderBottom: "1px solid var(--color-border)",
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                        }}
-                      >
+                    <li key={a.student.StudentID} className={styles.attItem}>
+                      <div className={styles.attTop}>
                         <span>{a.student.StudentName}</span>
                         {canEdit ? (
                           <button
@@ -736,27 +684,13 @@ export function MeetingsView({ role }: { role: string }) {
                                 a.AttendanceRemarks,
                               )
                             }
-                            style={{
-                              padding: "4px 8px",
-                              borderRadius: "var(--radius-sm)",
-                              border: "1px solid var(--color-border)",
-                              background: a.IsPresent
-                                ? "var(--color-success)"
-                                : "var(--color-surface)",
-                              color: a.IsPresent ? "#fff" : "inherit",
-                              fontSize: "var(--font-size-xs)",
-                              cursor: "pointer",
-                            }}
+                            className={`${styles.attToggle} ${a.IsPresent ? styles.attTogglePresent : ""}`}
                           >
                             {a.IsPresent ? "Present" : "Absent"}
                           </button>
                         ) : (
                           <span
-                            style={{
-                              color: a.IsPresent
-                                ? "var(--color-success)"
-                                : "var(--color-danger)",
-                            }}
+                            className={`${styles.attStatus} ${a.IsPresent ? styles.attStatusPresent : styles.attStatusAbsent}`}
                           >
                             {a.IsPresent ? "Present" : "Absent"}
                           </span>
@@ -780,20 +714,11 @@ export function MeetingsView({ role }: { role: string }) {
                               e.target.value,
                             )
                           }
-                          style={{
-                            fontSize: "var(--font-size-xs)",
-                            padding: "4px",
-                            border: "1px solid var(--color-border)",
-                            borderRadius: "var(--radius-sm)",
-                            width: "100%",
-                          }}
+                          className={styles.remarksInput}
                         />
                       ) : (
                         a.AttendanceRemarks && (
-                          <span
-                            className="text-muted"
-                            style={{ fontSize: "var(--font-size-xs)" }}
-                          >
+                          <span className={`${styles.remarksText} text-muted`}>
                             {a.AttendanceRemarks}
                           </span>
                         )

@@ -121,8 +121,6 @@ export function GroupsView({ role }: { role: string }) {
     }
   }
 
-  if (loading) return <p className="text-muted">Loading...</p>;
-
   const q = search.trim().toLowerCase();
   const filtered = list.filter((g) => {
     if (!q) return true;
@@ -201,6 +199,7 @@ export function GroupsView({ role }: { role: string }) {
             placeholder="Search by group, project, guide, type, or status"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            disabled={loading}
           />
         </div>
         {canEdit && (
@@ -208,6 +207,7 @@ export function GroupsView({ role }: { role: string }) {
             variant="primary"
             icon={<IconPlus size={18} />}
             onClick={() => setModal(true)}
+            disabled={loading}
           >
             Add group
           </Button>
@@ -221,6 +221,9 @@ export function GroupsView({ role }: { role: string }) {
         onRowClick={(r) =>
           window.location.assign(`/groups/${r.ProjectGroupID}`)
         }
+        loading={loading}
+        loadingRows={6}
+        loadingMessage="Loading groups..."
         emptyMessage={q ? "No groups match your search" : "No groups yet"}
       />
       <Modal
