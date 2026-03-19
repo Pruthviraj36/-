@@ -6,44 +6,95 @@ import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import { IconPlus, IconEdit, IconTrash } from "@/components/ui/Icons";
+import { IconPlus, IconTrash } from "@/components/ui/Icons";
 import { useToast } from "@/components/ui/Toast";
 import styles from "./MastersView.module.css";
 
-type Tab = "project-types" | "staff" | "academic-years" | "departments" | "students";
+type Tab =
+  | "project-types"
+  | "staff"
+  | "academic-years"
+  | "departments"
+  | "students";
 
 export function MastersView() {
   const [tab, setTab] = useState<Tab>("project-types");
-  const [pt, setPt] = useState<{ ProjectTypeID: number; ProjectTypeName: string; Description: string | null }[]>([]);
-  const [staff, setStaff] = useState<{ StaffID: number; StaffName: string; Email: string; Role: string }[]>([]);
-  const [ay, setAy] = useState<{ AcademicYearID: number; YearName: string; StartDate: string; EndDate: string; IsActive: boolean }[]>([]);
-  const [depts, setDepts] = useState<{ DepartmentID: number; DepartmentName: string; AcademicYearID: number; academicYear?: { YearName: string } }[]>([]);
+  const [search, setSearch] = useState("");
+  const [pt, setPt] = useState<
+    {
+      ProjectTypeID: number;
+      ProjectTypeName: string;
+      Description: string | null;
+    }[]
+  >([]);
+  const [staff, setStaff] = useState<
+    { StaffID: number; StaffName: string; Email: string; Role: string }[]
+  >([]);
+  const [ay, setAy] = useState<
+    {
+      AcademicYearID: number;
+      YearName: string;
+      StartDate: string;
+      EndDate: string;
+      IsActive: boolean;
+    }[]
+  >([]);
+  const [depts, setDepts] = useState<
+    {
+      DepartmentID: number;
+      DepartmentName: string;
+      AcademicYearID: number;
+      academicYear?: { YearName: string };
+    }[]
+  >([]);
   const [students, setStudents] = useState<any[]>([]);
-  const [modal, setModal] = useState<"pt" | "staff" | "ay" | "dept" | "student" | null>(null);
+  const [modal, setModal] = useState<
+    "pt" | "staff" | "ay" | "dept" | "student" | null
+  >(null);
   const [form, setForm] = useState<Record<string, any>>({});
   const [editId, setEditId] = useState<number | null>(null);
   const toast = useToast();
 
   function load() {
-    fetch("/api/masters/project-types").then((r) => r.json()).then((d) => setPt(Array.isArray(d) ? d : []));
-    fetch("/api/masters/staff").then((r) => r.json()).then((d) => setStaff(Array.isArray(d) ? d : []));
-    fetch("/api/masters/academic-years").then((r) => r.json()).then((d) => setAy(Array.isArray(d) ? d : []));
-    fetch("/api/masters/departments").then((r) => r.json()).then((d) => setDepts(Array.isArray(d) ? d : []));
-    fetch("/api/masters/students").then((r) => r.json()).then((d) => setStudents(Array.isArray(d) ? d : []));
+    fetch("/api/masters/project-types")
+      .then((r) => r.json())
+      .then((d) => setPt(Array.isArray(d) ? d : []));
+    fetch("/api/masters/staff")
+      .then((r) => r.json())
+      .then((d) => setStaff(Array.isArray(d) ? d : []));
+    fetch("/api/masters/academic-years")
+      .then((r) => r.json())
+      .then((d) => setAy(Array.isArray(d) ? d : []));
+    fetch("/api/masters/departments")
+      .then((r) => r.json())
+      .then((d) => setDepts(Array.isArray(d) ? d : []));
+    fetch("/api/masters/students")
+      .then((r) => r.json())
+      .then((d) => setStudents(Array.isArray(d) ? d : []));
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   function openPt(id?: number) {
     const r = id ? pt.find((x) => x.ProjectTypeID === id) : null;
-    setForm({ ProjectTypeName: r?.ProjectTypeName ?? "", Description: r?.Description ?? "" });
+    setForm({
+      ProjectTypeName: r?.ProjectTypeName ?? "",
+      Description: r?.Description ?? "",
+    });
     setEditId(r?.ProjectTypeID ?? null);
     setModal("pt");
   }
 
   function openStaff(id?: number) {
     const r = id ? staff.find((x) => x.StaffID === id) : null;
-    setForm({ StaffName: r?.StaffName ?? "", Email: r?.Email ?? "", Password: "", Role: r?.Role === "Admin" ? "Admin" : "Faculty" });
+    setForm({
+      StaffName: r?.StaffName ?? "",
+      Email: r?.Email ?? "",
+      Password: "",
+      Role: r?.Role === "Admin" ? "Admin" : "Faculty",
+    });
     setEditId(r?.StaffID ?? null);
     setModal("staff");
   }
@@ -52,9 +103,13 @@ export function MastersView() {
     const r = id ? ay.find((x) => x.AcademicYearID === id) : null;
     setForm({
       YearName: r?.YearName ?? "",
-      StartDate: r?.StartDate ? new Date(r.StartDate).toISOString().split("T")[0] : "",
-      EndDate: r?.EndDate ? new Date(r.EndDate).toISOString().split("T")[0] : "",
-      IsActive: r?.IsActive ?? false
+      StartDate: r?.StartDate
+        ? new Date(r.StartDate).toISOString().split("T")[0]
+        : "",
+      EndDate: r?.EndDate
+        ? new Date(r.EndDate).toISOString().split("T")[0]
+        : "",
+      IsActive: r?.IsActive ?? false,
     });
     setEditId(r?.AcademicYearID ?? null);
     setModal("ay");
@@ -62,7 +117,11 @@ export function MastersView() {
 
   function openDept(id?: number) {
     const r = id ? depts.find((x) => x.DepartmentID === id) : null;
-    setForm({ DepartmentName: r?.DepartmentName ?? "", AcademicYearID: String(r?.AcademicYearID ?? ""), Description: "" });
+    setForm({
+      DepartmentName: r?.DepartmentName ?? "",
+      AcademicYearID: String(r?.AcademicYearID ?? ""),
+      Description: "",
+    });
     setEditId(r?.DepartmentID ?? null);
     setModal("dept");
   }
@@ -76,7 +135,7 @@ export function MastersView() {
       Password: "",
       DepartmentID: String(r?.DepartmentID ?? ""),
       AcademicYearID: String(r?.AcademicYearID ?? ""),
-      Description: r?.Description ?? ""
+      Description: r?.Description ?? "",
     });
     setEditId(r?.StudentID ?? null);
     setModal("student");
@@ -85,66 +144,148 @@ export function MastersView() {
   async function savePt() {
     try {
       const method = editId ? "PUT" : "POST";
-      const url = editId ? `/api/masters/project-types/${editId}` : "/api/masters/project-types";
-      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+      const url = editId
+        ? `/api/masters/project-types/${editId}`
+        : "/api/masters/project-types";
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
       if (!res.ok) throw new Error();
-      toast.add(editId ? "Updated" : "Created", "success");
+      toast.add(
+        editId
+          ? "Record updated successfully."
+          : "Record created successfully.",
+        "success",
+      );
       setModal(null);
       load();
-    } catch { toast.add("Failed", "error"); }
+    } catch {
+      toast.add("Unable to save record.", "error");
+    }
   }
 
   async function saveStaff() {
     try {
-      const body: Record<string, any> = { StaffName: form.StaffName, Email: form.Email, Role: form.Role };
+      const body: Record<string, any> = {
+        StaffName: form.StaffName,
+        Email: form.Email,
+        Role: form.Role,
+      };
       if (form.Password) body.Password = form.Password;
-      if (!editId && !form.Password) { toast.add("Password required", "error"); return; }
+      if (!editId && !form.Password) {
+        toast.add("Please provide a password.", "error");
+        return;
+      }
       const method = editId ? "PUT" : "POST";
-      const url = editId ? `/api/masters/staff/${editId}` : "/api/masters/staff";
-      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const url = editId
+        ? `/api/masters/staff/${editId}`
+        : "/api/masters/staff";
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
       if (!res.ok) throw new Error();
-      toast.add(editId ? "Updated" : "Created", "success");
+      toast.add(
+        editId
+          ? "Record updated successfully."
+          : "Record created successfully.",
+        "success",
+      );
       setModal(null);
       load();
-    } catch { toast.add("Failed", "error"); }
+    } catch {
+      toast.add("Unable to save record.", "error");
+    }
   }
 
   async function saveAy() {
     try {
       const method = editId ? "PUT" : "POST";
-      const url = editId ? `/api/masters/academic-years/${editId}` : "/api/masters/academic-years";
-      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+      const url = editId
+        ? `/api/masters/academic-years/${editId}`
+        : "/api/masters/academic-years";
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
       if (!res.ok) throw new Error();
-      toast.add(editId ? "Updated" : "Created", "success");
+      toast.add(
+        editId
+          ? "Record updated successfully."
+          : "Record created successfully.",
+        "success",
+      );
       setModal(null);
       load();
-    } catch { toast.add("Failed", "error"); }
+    } catch {
+      toast.add("Unable to save record.", "error");
+    }
   }
 
   async function saveDept() {
     try {
       const method = editId ? "PUT" : "POST";
-      const url = editId ? `/api/masters/departments/${editId}` : "/api/masters/departments";
-      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...form, AcademicYearID: Number(form.AcademicYearID) }) });
+      const url = editId
+        ? `/api/masters/departments/${editId}`
+        : "/api/masters/departments";
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...form,
+          AcademicYearID: Number(form.AcademicYearID),
+        }),
+      });
       if (!res.ok) throw new Error();
-      toast.add(editId ? "Updated" : "Created", "success");
+      toast.add(
+        editId
+          ? "Record updated successfully."
+          : "Record created successfully.",
+        "success",
+      );
       setModal(null);
       load();
-    } catch { toast.add("Failed", "error"); }
+    } catch {
+      toast.add("Unable to save record.", "error");
+    }
   }
 
   async function saveStudent() {
     try {
-      const body = { ...form, DepartmentID: Number(form.DepartmentID), AcademicYearID: Number(form.AcademicYearID) };
-      if (!editId && !form.Password) { toast.add("Password required", "error"); return; }
+      const body = {
+        ...form,
+        DepartmentID: Number(form.DepartmentID),
+        AcademicYearID: Number(form.AcademicYearID),
+      };
+      if (!editId && !form.Password) {
+        toast.add("Please provide a password.", "error");
+        return;
+      }
       const method = editId ? "PUT" : "POST";
-      const url = editId ? `/api/masters/students/${editId}` : "/api/masters/students";
-      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const url = editId
+        ? `/api/masters/students/${editId}`
+        : "/api/masters/students";
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
       if (!res.ok) throw new Error();
-      toast.add(editId ? "Updated" : "Created", "success");
+      toast.add(
+        editId
+          ? "Record updated successfully."
+          : "Record created successfully.",
+        "success",
+      );
       setModal(null);
       load();
-    } catch { toast.add("Failed", "error"); }
+    } catch {
+      toast.add("Unable to save record.", "error");
+    }
   }
 
   async function deleteItem(type: Tab, id: number) {
@@ -153,130 +294,603 @@ export function MastersView() {
       const url = `/api/masters/${type}/${id}`;
       const res = await fetch(url, { method: "DELETE" });
       if (!res.ok) throw new Error();
-      toast.add("Deleted", "success");
+      toast.add("Record deleted successfully.", "success");
       load();
-    } catch { toast.add("Failed to delete", "error"); }
+    } catch {
+      toast.add("Unable to delete record.", "error");
+    }
   }
 
   const ptCols: Column<any>[] = [
     { key: "ProjectTypeName", header: "Name", mobileLabel: "Name" },
-    { key: "Description", header: "Description", render: (r) => r.Description || "—", mobileLabel: "Desc" },
-    { key: "actions", header: "", render: (r) => <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); deleteItem("project-types", r.ProjectTypeID); }}><IconTrash size={16} /></Button> }
+    {
+      key: "Description",
+      header: "Description",
+      render: (r) => r.Description || "—",
+      mobileLabel: "Desc",
+    },
+    {
+      key: "actions",
+      header: "",
+      render: (r) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            deleteItem("project-types", r.ProjectTypeID);
+          }}
+        >
+          <IconTrash size={16} />
+        </Button>
+      ),
+    },
   ];
 
   const staffCols: Column<any>[] = [
     { key: "StaffName", header: "Name", mobileLabel: "Name" },
     { key: "Email", header: "Email", mobileLabel: "Email" },
     { key: "Role", header: "Role", mobileLabel: "Role" },
-    { key: "actions", header: "", render: (r) => <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); deleteItem("staff", r.StaffID); }}><IconTrash size={16} /></Button> }
+    {
+      key: "actions",
+      header: "",
+      render: (r) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            deleteItem("staff", r.StaffID);
+          }}
+        >
+          <IconTrash size={16} />
+        </Button>
+      ),
+    },
   ];
 
   const ayCols: Column<any>[] = [
     { key: "YearName", header: "Year", mobileLabel: "Year" },
-    { key: "StartDate", header: "Start", render: (r) => new Date(r.StartDate).toLocaleDateString(), mobileLabel: "Start" },
-    { key: "EndDate", header: "End", render: (r) => new Date(r.EndDate).toLocaleDateString(), mobileLabel: "End" },
-    { key: "IsActive", header: "Active", render: (r) => r.IsActive ? "Yes" : "No", mobileLabel: "Active" },
-    { key: "actions", header: "", render: (r) => <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); deleteItem("academic-years", r.AcademicYearID); }}><IconTrash size={16} /></Button> }
+    {
+      key: "StartDate",
+      header: "Start",
+      render: (r) => new Date(r.StartDate).toLocaleDateString(),
+      mobileLabel: "Start",
+    },
+    {
+      key: "EndDate",
+      header: "End",
+      render: (r) => new Date(r.EndDate).toLocaleDateString(),
+      mobileLabel: "End",
+    },
+    {
+      key: "IsActive",
+      header: "Active",
+      render: (r) => (r.IsActive ? "Yes" : "No"),
+      mobileLabel: "Active",
+    },
+    {
+      key: "actions",
+      header: "",
+      render: (r) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            deleteItem("academic-years", r.AcademicYearID);
+          }}
+        >
+          <IconTrash size={16} />
+        </Button>
+      ),
+    },
   ];
 
   const deptCols: Column<any>[] = [
     { key: "DepartmentName", header: "Department", mobileLabel: "Dept" },
-    { key: "YearName", header: "Year", render: (r) => r.academicYear?.YearName ?? "—", mobileLabel: "Year" },
-    { key: "actions", header: "", render: (r) => <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); deleteItem("departments", r.DepartmentID); }}><IconTrash size={16} /></Button> }
+    {
+      key: "YearName",
+      header: "Year",
+      render: (r) => r.academicYear?.YearName ?? "—",
+      mobileLabel: "Year",
+    },
+    {
+      key: "actions",
+      header: "",
+      render: (r) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            deleteItem("departments", r.DepartmentID);
+          }}
+        >
+          <IconTrash size={16} />
+        </Button>
+      ),
+    },
   ];
 
   const studentCols: Column<any>[] = [
     { key: "StudentName", header: "Name", mobileLabel: "Name" },
     { key: "Email", header: "Email", mobileLabel: "Email" },
-    { key: "Department", header: "Dept", render: (r) => depts.find(d => d.DepartmentID === r.DepartmentID)?.DepartmentName ?? "—", mobileLabel: "Dept" },
-    { key: "Year", header: "Year", render: (r) => ay.find(y => y.AcademicYearID === r.AcademicYearID)?.YearName ?? "—", mobileLabel: "Year" },
-    { key: "actions", header: "", render: (r) => <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); deleteItem("students", r.StudentID); }}><IconTrash size={16} /></Button> }
+    {
+      key: "Department",
+      header: "Dept",
+      render: (r) =>
+        depts.find((d) => d.DepartmentID === r.DepartmentID)?.DepartmentName ??
+        "—",
+      mobileLabel: "Dept",
+    },
+    {
+      key: "Year",
+      header: "Year",
+      render: (r) =>
+        ay.find((y) => y.AcademicYearID === r.AcademicYearID)?.YearName ?? "—",
+      mobileLabel: "Year",
+    },
+    {
+      key: "actions",
+      header: "",
+      render: (r) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            deleteItem("students", r.StudentID);
+          }}
+        >
+          <IconTrash size={16} />
+        </Button>
+      ),
+    },
   ];
+
+  const q = search.trim().toLowerCase();
+  const filteredPt = pt.filter(
+    (x) =>
+      !q ||
+      x.ProjectTypeName.toLowerCase().includes(q) ||
+      (x.Description || "").toLowerCase().includes(q),
+  );
+  const filteredStaff = staff.filter(
+    (x) =>
+      !q ||
+      x.StaffName.toLowerCase().includes(q) ||
+      x.Email.toLowerCase().includes(q) ||
+      x.Role.toLowerCase().includes(q),
+  );
+  const filteredAy = ay.filter(
+    (x) =>
+      !q ||
+      x.YearName.toLowerCase().includes(q) ||
+      (x.IsActive ? "active" : "inactive").includes(q),
+  );
+  const filteredDepts = depts.filter(
+    (x) =>
+      !q ||
+      x.DepartmentName.toLowerCase().includes(q) ||
+      (x.academicYear?.YearName || "").toLowerCase().includes(q),
+  );
+  const filteredStudents = students.filter(
+    (x) =>
+      !q ||
+      (x.StudentName || "").toLowerCase().includes(q) ||
+      (x.Email || "").toLowerCase().includes(q) ||
+      (
+        depts.find((d) => d.DepartmentID === x.DepartmentID)?.DepartmentName ||
+        ""
+      )
+        .toLowerCase()
+        .includes(q) ||
+      (ay.find((y) => y.AcademicYearID === x.AcademicYearID)?.YearName || "")
+        .toLowerCase()
+        .includes(q),
+  );
+
+  const tabName: Record<Tab, string> = {
+    "project-types": "Project Types",
+    staff: "Staff",
+    "academic-years": "Academic Years",
+    departments: "Departments",
+    students: "Students",
+  };
+
+  const addLabel: Record<Tab, string> = {
+    "project-types": "Add type",
+    staff: "Add staff",
+    "academic-years": "Add year",
+    departments: "Add department",
+    students: "Add student",
+  };
+
+  const filteredCount =
+    tab === "project-types"
+      ? filteredPt.length
+      : tab === "staff"
+        ? filteredStaff.length
+        : tab === "academic-years"
+          ? filteredAy.length
+          : tab === "departments"
+            ? filteredDepts.length
+            : filteredStudents.length;
+
+  const totalCount =
+    tab === "project-types"
+      ? pt.length
+      : tab === "staff"
+        ? staff.length
+        : tab === "academic-years"
+          ? ay.length
+          : tab === "departments"
+            ? depts.length
+            : students.length;
+
+  function handleAdd() {
+    if (tab === "project-types") openPt();
+    if (tab === "staff") openStaff();
+    if (tab === "academic-years") openAy();
+    if (tab === "departments") openDept();
+    if (tab === "students") openStudent();
+  }
 
   return (
     <div className={styles.wrap}>
+      <div className={styles.header}>
+        <div>
+          <h2 className={styles.title}>Manage Masters</h2>
+          <p className={styles.subtitle}>
+            Use tabs to maintain master data. Search narrows the current tab
+            only.
+          </p>
+        </div>
+        <div className={styles.summaryPill}>
+          {filteredCount} of {totalCount} {tabName[tab].toLowerCase()}
+        </div>
+      </div>
+
       <div className={styles.tabs}>
-        <button type="button" className={tab === "project-types" ? styles.tabActive : styles.tab} onClick={() => setTab("project-types")}>Project types</button>
-        <button type="button" className={tab === "staff" ? styles.tabActive : styles.tab} onClick={() => setTab("staff")}>Staff</button>
-        <button type="button" className={tab === "academic-years" ? styles.tabActive : styles.tab} onClick={() => setTab("academic-years")}>Years</button>
-        <button type="button" className={tab === "departments" ? styles.tabActive : styles.tab} onClick={() => setTab("departments")}>Departments</button>
-        <button type="button" className={tab === "students" ? styles.tabActive : styles.tab} onClick={() => setTab("students")}>Students</button>
+        <button
+          type="button"
+          className={tab === "project-types" ? styles.tabActive : styles.tab}
+          onClick={() => setTab("project-types")}
+        >
+          Project types
+        </button>
+        <button
+          type="button"
+          className={tab === "staff" ? styles.tabActive : styles.tab}
+          onClick={() => setTab("staff")}
+        >
+          Staff
+        </button>
+        <button
+          type="button"
+          className={tab === "academic-years" ? styles.tabActive : styles.tab}
+          onClick={() => setTab("academic-years")}
+        >
+          Years
+        </button>
+        <button
+          type="button"
+          className={tab === "departments" ? styles.tabActive : styles.tab}
+          onClick={() => setTab("departments")}
+        >
+          Departments
+        </button>
+        <button
+          type="button"
+          className={tab === "students" ? styles.tabActive : styles.tab}
+          onClick={() => setTab("students")}
+        >
+          Students
+        </button>
+      </div>
+
+      <div className={styles.toolbar}>
+        <div className={styles.search}>
+          <Input
+            placeholder={`Search ${tabName[tab].toLowerCase()}...`}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <Button
+          variant="primary"
+          size="sm"
+          icon={<IconPlus size={16} />}
+          onClick={handleAdd}
+        >
+          {addLabel[tab]}
+        </Button>
       </div>
 
       {tab === "project-types" && (
-        <>
-          <div className={styles.toolbar}><Button variant="primary" size="sm" icon={<IconPlus size={16} />} onClick={() => openPt()}>Add type</Button></div>
-          <Table data={pt} columns={ptCols} keyField="ProjectTypeID" onRowClick={(r) => openPt(r.ProjectTypeID)} />
-        </>
+        <Table
+          data={filteredPt}
+          columns={ptCols}
+          keyField="ProjectTypeID"
+          onRowClick={(r) => openPt(r.ProjectTypeID)}
+          emptyMessage={
+            q ? "No project types match your search" : "No project types yet"
+          }
+        />
       )}
       {tab === "staff" && (
-        <>
-          <div className={styles.toolbar}><Button variant="primary" size="sm" icon={<IconPlus size={16} />} onClick={() => openStaff()}>Add staff</Button></div>
-          <Table data={staff} columns={staffCols} keyField="StaffID" onRowClick={(r) => openStaff(r.StaffID)} />
-        </>
+        <Table
+          data={filteredStaff}
+          columns={staffCols}
+          keyField="StaffID"
+          onRowClick={(r) => openStaff(r.StaffID)}
+          emptyMessage={q ? "No staff match your search" : "No staff yet"}
+        />
       )}
       {tab === "academic-years" && (
-        <>
-          <div className={styles.toolbar}><Button variant="primary" size="sm" icon={<IconPlus size={16} />} onClick={() => openAy()}>Add year</Button></div>
-          <Table data={ay} columns={ayCols} keyField="AcademicYearID" onRowClick={(r) => openAy(r.AcademicYearID)} />
-        </>
+        <Table
+          data={filteredAy}
+          columns={ayCols}
+          keyField="AcademicYearID"
+          onRowClick={(r) => openAy(r.AcademicYearID)}
+          emptyMessage={
+            q ? "No academic years match your search" : "No academic years yet"
+          }
+        />
       )}
       {tab === "departments" && (
-        <>
-          <div className={styles.toolbar}><Button variant="primary" size="sm" icon={<IconPlus size={16} />} onClick={() => openDept()}>Add department</Button></div>
-          <Table data={depts} columns={deptCols} keyField="DepartmentID" onRowClick={(r) => openDept(r.DepartmentID)} />
-        </>
+        <Table
+          data={filteredDepts}
+          columns={deptCols}
+          keyField="DepartmentID"
+          onRowClick={(r) => openDept(r.DepartmentID)}
+          emptyMessage={
+            q ? "No departments match your search" : "No departments yet"
+          }
+        />
       )}
       {tab === "students" && (
-        <>
-          <div className={styles.toolbar}><Button variant="primary" size="sm" icon={<IconPlus size={16} />} onClick={() => openStudent()}>Add student</Button></div>
-          <Table data={students} columns={studentCols} keyField="StudentID" onRowClick={(r) => openStudent(r.StudentID)} />
-        </>
+        <Table
+          data={filteredStudents}
+          columns={studentCols}
+          keyField="StudentID"
+          onRowClick={(r) => openStudent(r.StudentID)}
+          emptyMessage={q ? "No students match your search" : "No students yet"}
+        />
       )}
 
-      <Modal open={modal === "pt"} onClose={() => setModal(null)} title={editId ? "Edit project type" : "New project type"} footer={<><Button variant="secondary" onClick={() => setModal(null)}>Cancel</Button><Button variant="primary" onClick={savePt}>Save</Button></>}>
+      <Modal
+        open={modal === "pt"}
+        onClose={() => setModal(null)}
+        title={editId ? "Edit project type" : "New project type"}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setModal(null)}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={savePt}>
+              Save
+            </Button>
+          </>
+        }
+      >
         <div className={styles.form}>
-          <Input label="Name" value={form.ProjectTypeName} onChange={(e) => setForm({ ...form, ProjectTypeName: e.target.value })} />
-          <Input label="Description" value={form.Description} onChange={(e) => setForm({ ...form, Description: e.target.value })} />
+          <Input
+            label="Name"
+            value={form.ProjectTypeName}
+            onChange={(e) =>
+              setForm({ ...form, ProjectTypeName: e.target.value })
+            }
+          />
+          <Input
+            label="Description"
+            value={form.Description}
+            onChange={(e) => setForm({ ...form, Description: e.target.value })}
+          />
         </div>
       </Modal>
 
-      <Modal open={modal === "staff"} onClose={() => setModal(null)} title={editId ? "Edit staff" : "New staff"} footer={<><Button variant="secondary" onClick={() => setModal(null)}>Cancel</Button><Button variant="primary" onClick={saveStaff}>Save</Button></>}>
+      <Modal
+        open={modal === "staff"}
+        onClose={() => setModal(null)}
+        title={editId ? "Edit staff" : "New staff"}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setModal(null)}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={saveStaff}>
+              Save
+            </Button>
+          </>
+        }
+      >
         <div className={styles.form}>
-          <Input label="Name" value={form.StaffName} onChange={(e) => setForm({ ...form, StaffName: e.target.value })} />
-          <Input label="Email" type="email" value={form.Email} onChange={(e) => setForm({ ...form, Email: e.target.value })} />
-          <Input label="Password" type="password" value={form.Password} onChange={(e) => setForm({ ...form, Password: e.target.value })} placeholder={editId ? "Leave blank to keep" : ""} />
-          <Select label="Role" options={[{ value: "Admin", label: "Admin" }, { value: "Faculty", label: "Faculty" }]} value={form.Role} onChange={(e) => setForm({ ...form, Role: e.target.value })} />
+          <Input
+            label="Name"
+            value={form.StaffName}
+            onChange={(e) => setForm({ ...form, StaffName: e.target.value })}
+          />
+          <Input
+            label="Email"
+            type="email"
+            value={form.Email}
+            onChange={(e) => setForm({ ...form, Email: e.target.value })}
+          />
+          <Input
+            label="Password"
+            type="password"
+            value={form.Password}
+            onChange={(e) => setForm({ ...form, Password: e.target.value })}
+            placeholder={editId ? "Leave blank to keep" : ""}
+          />
+          <Select
+            label="Role"
+            options={[
+              { value: "Admin", label: "Admin" },
+              { value: "Faculty", label: "Faculty" },
+            ]}
+            value={form.Role}
+            onChange={(e) => setForm({ ...form, Role: e.target.value })}
+          />
         </div>
       </Modal>
 
-      <Modal open={modal === "ay"} onClose={() => setModal(null)} title={editId ? "Edit year" : "New year"} footer={<><Button variant="secondary" onClick={() => setModal(null)}>Cancel</Button><Button variant="primary" onClick={saveAy}>Save</Button></>}>
+      <Modal
+        open={modal === "ay"}
+        onClose={() => setModal(null)}
+        title={editId ? "Edit year" : "New year"}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setModal(null)}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={saveAy}>
+              Save
+            </Button>
+          </>
+        }
+      >
         <div className={styles.form}>
-          <Input label="Year name (e.g. 2024-25)" value={form.YearName} onChange={(e) => setForm({ ...form, YearName: e.target.value })} />
-          <Input label="Start date" type="date" value={form.StartDate} onChange={(e) => setForm({ ...form, StartDate: e.target.value })} />
-          <Input label="End date" type="date" value={form.EndDate} onChange={(e) => setForm({ ...form, EndDate: e.target.value })} />
-          <div style={{ display: "flex", alignItems: "center", gap: "var(--space-sm)", marginTop: "var(--space-sm)" }}>
-            <input type="checkbox" id="ay-active" checked={form.IsActive} onChange={(e) => setForm({ ...form, IsActive: e.target.checked })} />
+          <Input
+            label="Year name (e.g. 2024-25)"
+            value={form.YearName}
+            onChange={(e) => setForm({ ...form, YearName: e.target.value })}
+          />
+          <Input
+            label="Start date"
+            type="date"
+            value={form.StartDate}
+            onChange={(e) => setForm({ ...form, StartDate: e.target.value })}
+          />
+          <Input
+            label="End date"
+            type="date"
+            value={form.EndDate}
+            onChange={(e) => setForm({ ...form, EndDate: e.target.value })}
+          />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "var(--space-sm)",
+              marginTop: "var(--space-sm)",
+            }}
+          >
+            <input
+              type="checkbox"
+              id="ay-active"
+              checked={form.IsActive}
+              onChange={(e) => setForm({ ...form, IsActive: e.target.checked })}
+            />
             <label htmlFor="ay-active">Active Year</label>
           </div>
         </div>
       </Modal>
 
-      <Modal open={modal === "dept"} onClose={() => setModal(null)} title={editId ? "Edit department" : "New department"} footer={<><Button variant="secondary" onClick={() => setModal(null)}>Cancel</Button><Button variant="primary" onClick={saveDept}>Save</Button></>}>
+      <Modal
+        open={modal === "dept"}
+        onClose={() => setModal(null)}
+        title={editId ? "Edit department" : "New department"}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setModal(null)}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={saveDept}>
+              Save
+            </Button>
+          </>
+        }
+      >
         <div className={styles.form}>
-          <Input label="Department name" value={form.DepartmentName} onChange={(e) => setForm({ ...form, DepartmentName: e.target.value })} />
-          <Select label="Academic year" options={ay.map(y => ({ value: String(y.AcademicYearID), label: y.YearName }))} value={form.AcademicYearID} onChange={(e) => setForm({ ...form, AcademicYearID: e.target.value })} />
+          <Input
+            label="Department name"
+            value={form.DepartmentName}
+            onChange={(e) =>
+              setForm({ ...form, DepartmentName: e.target.value })
+            }
+          />
+          <Select
+            label="Academic year"
+            options={ay.map((y) => ({
+              value: String(y.AcademicYearID),
+              label: y.YearName,
+            }))}
+            value={form.AcademicYearID}
+            onChange={(e) =>
+              setForm({ ...form, AcademicYearID: e.target.value })
+            }
+          />
         </div>
       </Modal>
 
-      <Modal open={modal === "student"} onClose={() => setModal(null)} title={editId ? "Edit student" : "New student"} footer={<><Button variant="secondary" onClick={() => setModal(null)}>Cancel</Button><Button variant="primary" onClick={saveStudent}>Save</Button></>}>
+      <Modal
+        open={modal === "student"}
+        onClose={() => setModal(null)}
+        title={editId ? "Edit student" : "New student"}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setModal(null)}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={saveStudent}>
+              Save
+            </Button>
+          </>
+        }
+      >
         <div className={styles.form}>
-          <Input label="Name" value={form.StudentName} onChange={(e) => setForm({ ...form, StudentName: e.target.value })} />
-          <Input label="Email" type="email" value={form.Email} onChange={(e) => setForm({ ...form, Email: e.target.value })} />
-          <Input label="Phone" value={form.Phone} onChange={(e) => setForm({ ...form, Phone: e.target.value })} />
-          <Input label="Password" type="password" value={form.Password} onChange={(e) => setForm({ ...form, Password: e.target.value })} placeholder={editId ? "Leave blank to keep" : ""} />
-          <Select label="Department" options={[{ value: "", label: "Select department" }, ...depts.map(d => ({ value: String(d.DepartmentID), label: d.DepartmentName }))]} value={form.DepartmentID} onChange={(e) => setForm({ ...form, DepartmentID: e.target.value })} />
-          <Select label="Academic year" options={[{ value: "", label: "Select year" }, ...ay.map(y => ({ value: String(y.AcademicYearID), label: y.YearName }))]} value={form.AcademicYearID} onChange={(e) => setForm({ ...form, AcademicYearID: e.target.value })} />
+          <Input
+            label="Name"
+            value={form.StudentName}
+            onChange={(e) => setForm({ ...form, StudentName: e.target.value })}
+          />
+          <Input
+            label="Email"
+            type="email"
+            value={form.Email}
+            onChange={(e) => setForm({ ...form, Email: e.target.value })}
+          />
+          <Input
+            label="Phone"
+            value={form.Phone}
+            onChange={(e) => setForm({ ...form, Phone: e.target.value })}
+          />
+          <Input
+            label="Password"
+            type="password"
+            value={form.Password}
+            onChange={(e) => setForm({ ...form, Password: e.target.value })}
+            placeholder={editId ? "Leave blank to keep" : ""}
+          />
+          <Select
+            label="Department"
+            options={[
+              { value: "", label: "Select department" },
+              ...depts.map((d) => ({
+                value: String(d.DepartmentID),
+                label: d.DepartmentName,
+              })),
+            ]}
+            value={form.DepartmentID}
+            onChange={(e) => setForm({ ...form, DepartmentID: e.target.value })}
+          />
+          <Select
+            label="Academic year"
+            options={[
+              { value: "", label: "Select year" },
+              ...ay.map((y) => ({
+                value: String(y.AcademicYearID),
+                label: y.YearName,
+              })),
+            ]}
+            value={form.AcademicYearID}
+            onChange={(e) =>
+              setForm({ ...form, AcademicYearID: e.target.value })
+            }
+          />
         </div>
       </Modal>
     </div>

@@ -3,7 +3,10 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/api-auth";
 import bcrypt from "bcrypt";
 
-export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   await requireRole(["admin", "faculty"]);
   const id = Number((await params).id);
   const b = await req.json();
@@ -22,15 +25,22 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const updated = await prisma.student.update({
     where: { StudentID: id },
-    data
+    data,
   });
   const { Password: _p, ...out } = updated;
   return Response.json(out);
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   await requireRole(["admin", "faculty"]);
   const id = Number((await params).id);
   await prisma.student.delete({ where: { StudentID: id } });
-  return Response.json({ ok: true });
+  return Response.json({
+    ok: true,
+    message: "Student deleted successfully.",
+    id,
+  });
 }

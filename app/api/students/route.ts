@@ -3,11 +3,21 @@ import bcrypt from "bcrypt";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/api-auth";
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   await requireRole(["admin", "faculty"]);
   const list = await prisma.student.findMany({
     orderBy: { StudentName: "asc" },
-    select: { StudentID: true, StudentName: true, Phone: true, Email: true, DepartmentID: true, AcademicYearID: true, Description: true, Created: true, Modified: true },
+    select: {
+      StudentID: true,
+      StudentName: true,
+      Phone: true,
+      Email: true,
+      DepartmentID: true,
+      AcademicYearID: true,
+      Description: true,
+      Created: true,
+      Modified: true,
+    },
   });
   return Response.json(list);
 }
@@ -15,8 +25,20 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   await requireRole(["admin", "faculty"]);
   const b = await req.json();
-  const { StudentName, Phone, Email, Password, DepartmentID, AcademicYearID, Description } = b;
-  if (!StudentName || !Email || !Password) return Response.json({ error: "StudentName, Email, Password required" }, { status: 400 });
+  const {
+    StudentName,
+    Phone,
+    Email,
+    Password,
+    DepartmentID,
+    AcademicYearID,
+    Description,
+  } = b;
+  if (!StudentName || !Email || !Password)
+    return Response.json(
+      { error: "Student name, email, and password are required." },
+      { status: 400 },
+    );
   const hash = await bcrypt.hash(Password, 10);
   const created = await prisma.student.create({
     data: {

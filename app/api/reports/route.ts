@@ -87,5 +87,5 @@ export async function GET(req: NextRequest) {
     return Response.json(data);
   }
 
-  return Response.json({ error: "Unknown report type" }, { status: 400 });
+  return Response.json({ error: "Unknown report type requested." }, { status: 400 });
 }

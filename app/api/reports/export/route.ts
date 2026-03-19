@@ -87,7 +87,7 @@ export async function GET(req: NextRequest) {
       };
     });
   } else {
-    return Response.json({ error: "Unknown type" }, { status: 400 });
+    return Response.json({ error: "Unknown report type requested." }, { status: 400 });
   }
 
   if (format === "excel") {
@@ -113,5 +113,5 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  return Response.json({ error: "format must be excel or pdf" }, { status: 400 });
+  return Response.json({ error: "Format must be excel or pdf." }, { status: 400 });
 }

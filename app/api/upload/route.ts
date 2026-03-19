@@ -16,9 +16,9 @@ export async function POST(req: NextRequest) {
   const projectGroupId = formData.get("projectGroupId");
   const documentType = formData.get("documentType") || "Other";
 
-  if (!file || !projectGroupId) return Response.json({ error: "file and projectGroupId required" }, { status: 400 });
+  if (!file || !projectGroupId) return Response.json({ error: "File and project group ID are required." }, { status: 400 });
   const groupId = Number(projectGroupId);
-  if (Number.isNaN(groupId)) return Response.json({ error: "Invalid projectGroupId" }, { status: 400 });
+  if (Number.isNaN(groupId)) return Response.json({ error: "Invalid project group ID." }, { status: 400 });
 
   const bytes = await file.arrayBuffer();
   const buf = Buffer.from(bytes);

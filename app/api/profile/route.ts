@@ -6,26 +6,38 @@ import bcrypt from "bcrypt";
 
 export async function GET() {
   const s = await getServerSession(authOptions);
-  if (!s?.user) return Response.json({ error: "Unauthorized" }, { status: 401 });
+  if (!s?.user)
+    return Response.json({ error: "Unauthorized access." }, { status: 401 });
   const role = (s.user as { role?: string }).role;
   const uid = (s.user as { uid?: string }).uid;
-  if (!uid) return Response.json({ error: "Bad session" }, { status: 400 });
+  if (!uid)
+    return Response.json({ error: "Invalid session." }, { status: 400 });
   if (role === "student") {
-    const u = await prisma.student.findUnique({ where: { StudentID: Number(uid) } });
-    if (!u) return Response.json({ error: "Not found" }, { status: 404 });
-    return Response.json({ name: u.StudentName, email: u.Email, phone: u.Phone });
+    const u = await prisma.student.findUnique({
+      where: { StudentID: Number(uid) },
+    });
+    if (!u)
+      return Response.json({ error: "Resource not found." }, { status: 404 });
+    return Response.json({
+      name: u.StudentName,
+      email: u.Email,
+      phone: u.Phone,
+    });
   }
   const u = await prisma.staff.findUnique({ where: { StaffID: Number(uid) } });
-  if (!u) return Response.json({ error: "Not found" }, { status: 404 });
+  if (!u)
+    return Response.json({ error: "Resource not found." }, { status: 404 });
   return Response.json({ name: u.StaffName, email: u.Email, phone: u.Phone });
 }
 
 export async function PUT(req: NextRequest) {
   const s = await getServerSession(authOptions);
-  if (!s?.user) return Response.json({ error: "Unauthorized" }, { status: 401 });
+  if (!s?.user)
+    return Response.json({ error: "Unauthorized access." }, { status: 401 });
   const role = (s.user as { role?: string }).role;
   const uid = (s.user as { uid?: string }).uid;
-  if (!uid) return Response.json({ error: "Bad session" }, { status: 400 });
+  if (!uid)
+    return Response.json({ error: "Invalid session." }, { status: 400 });
   const b = await req.json();
   const id = Number(uid);
   if (role === "student") {
@@ -43,5 +55,5 @@ export async function PUT(req: NextRequest) {
     if (b.password != null) data.Password = await bcrypt.hash(b.password, 10);
     await prisma.staff.update({ where: { StaffID: id }, data });
   }
-  return Response.json({ ok: true });
+  return Response.json({ ok: true, message: "Profile updated successfully." });
 }

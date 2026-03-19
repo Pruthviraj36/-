@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
   await requireRole(["admin"]);
   const b = await req.json();
   const { StaffName, Phone, Email, Password, Role, Description } = b;
-  if (!StaffName || !Email || !Password) return Response.json({ error: "StaffName, Email, Password required" }, { status: 400 });
+  if (!StaffName || !Email || !Password) return Response.json({ error: "Staff name, email, and password are required." }, { status: 400 });
   const hash = await bcrypt.hash(Password, 10);
   const created = await prisma.staff.create({
     data: {

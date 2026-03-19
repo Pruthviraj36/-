@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
   await requireRole(["admin", "faculty"]);
   const b = await req.json();
   const { ProjectGroupID, GuideStaffID, MeetingDateTime, MeetingPurpose, MeetingLocation, MeetingNotes, MeetingStatus } = b;
-  if (!ProjectGroupID || !GuideStaffID || !MeetingDateTime) return Response.json({ error: "ProjectGroupID, GuideStaffID, MeetingDateTime required" }, { status: 400 });
+  if (!ProjectGroupID || !GuideStaffID || !MeetingDateTime) return Response.json({ error: "Project group, guide, and meeting date/time are required." }, { status: 400 });
   const created = await prisma.projectMeeting.create({
     data: {
       ProjectGroupID,

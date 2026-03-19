@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth, requireRole } from "@/lib/api-auth";
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   const session = await requireAuth();
   const role = (session.user as { role?: string }).role;
   const uid = (session.user as { uid?: string }).uid;
@@ -13,7 +13,13 @@ export async function GET(req: NextRequest) {
     convener: { select: { StaffName: true } },
     expert: { select: { StaffName: true } },
     academicYear: { select: { YearName: true } },
-    members: { include: { student: { select: { StudentID: true, StudentName: true, Email: true } } } },
+    members: {
+      include: {
+        student: {
+          select: { StudentID: true, StudentName: true, Email: true },
+        },
+      },
+    },
   };
 
   if (role === "student") {
@@ -50,7 +56,10 @@ export async function POST(req: NextRequest) {
     Status,
   } = b;
   if (!ProjectGroupName || !ProjectTypeID || !GuideStaffID)
-    return Response.json({ error: "ProjectGroupName, ProjectTypeID, GuideStaffID required" }, { status: 400 });
+    return Response.json(
+      { error: "Project group name, project type, and guide are required." },
+      { status: 400 },
+    );
   const created = await prisma.projectGroup.create({
     data: {
       ProjectGroupName,

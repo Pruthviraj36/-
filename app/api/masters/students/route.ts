@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     await requireRole(["admin", "faculty"]);
     const b = await req.json();
     const { StudentName, Email, Password, DepartmentID, AcademicYearID, Phone, Description } = b;
-    if (!StudentName || !Email || !Password) return Response.json({ error: "Required fields missing" }, { status: 400 });
+    if (!StudentName || !Email || !Password) return Response.json({ error: "Student name, email, and password are required." }, { status: 400 });
     const hash = await bcrypt.hash(Password, 10);
     const created = await prisma.student.create({
         data: {

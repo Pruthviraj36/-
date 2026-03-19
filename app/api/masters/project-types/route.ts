@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
   await requireRole(["admin", "faculty"]);
   const b = await req.json();
   const { ProjectTypeName, Description } = b;
-  if (!ProjectTypeName) return Response.json({ error: "ProjectTypeName required" }, { status: 400 });
+  if (!ProjectTypeName) return Response.json({ error: "Project type name is required." }, { status: 400 });
   const created = await prisma.projectType.create({
     data: { ProjectTypeName, Description: Description || null },
   });
