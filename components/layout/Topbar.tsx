@@ -12,7 +12,12 @@ interface TopbarProps {
   onSearch?: (q: string) => void;
 }
 
-export function Topbar({ name, role, searchPlaceholder = "Search…", onSearch }: TopbarProps) {
+export function Topbar({
+  name,
+  role,
+  searchPlaceholder = "Search…",
+  onSearch,
+}: TopbarProps) {
   const [search, setSearch] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
 
@@ -28,7 +33,8 @@ export function Topbar({ name, role, searchPlaceholder = "Search…", onSearch }
     .toUpperCase()
     .slice(0, 2);
 
-  const roleLabel = role === "admin" ? "Admin" : role === "faculty" ? "Faculty" : "Student";
+  const roleLabel =
+    role === "admin" ? "Admin" : role === "faculty" ? "Faculty" : "Student";
 
   return (
     <header className={styles.topbar} role="banner">
@@ -46,7 +52,7 @@ export function Topbar({ name, role, searchPlaceholder = "Search…", onSearch }
         </div>
       </form>
       <div className={styles.actions}>
-        <div style={{ position: "relative" }}>
+        <div className={styles.menuWrap}>
           <button
             type="button"
             className={styles.profile}
@@ -67,42 +73,16 @@ export function Topbar({ name, role, searchPlaceholder = "Search…", onSearch }
             <>
               <div
                 role="presentation"
-                style={{ position: "fixed", inset: 0, zIndex: 100 }}
+                className={styles.menuBackdrop}
                 onClick={() => setProfileOpen(false)}
                 onKeyDown={(e) => e.key === "Escape" && setProfileOpen(false)}
               />
-              <div
-                role="menu"
-                style={{
-                  position: "absolute",
-                  top: "100%",
-                  right: 0,
-                  marginTop: 4,
-                  background: "var(--color-surface)",
-                  borderRadius: "var(--radius-md)",
-                  boxShadow: "var(--shadow-medium)",
-                  padding: "var(--space-xs)",
-                  minWidth: 160,
-                  zIndex: 101,
-                }}
-              >
+              <div role="menu" className={styles.menu}>
                 <button
                   type="button"
                   role="menuitem"
                   onClick={() => setProfileOpen(false)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "var(--space-sm)",
-                    width: "100%",
-                    padding: "var(--space-sm) var(--space-md)",
-                    border: "none",
-                    background: "transparent",
-                    font: "inherit",
-                    cursor: "pointer",
-                    borderRadius: "var(--radius-sm)",
-                    textAlign: "left",
-                  }}
+                  className={styles.menuItem}
                 >
                   <IconUser size={18} />
                   Profile
@@ -111,20 +91,7 @@ export function Topbar({ name, role, searchPlaceholder = "Search…", onSearch }
                   type="button"
                   role="menuitem"
                   onClick={() => signOut({ callbackUrl: "/login" })}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "var(--space-sm)",
-                    width: "100%",
-                    padding: "var(--space-sm) var(--space-md)",
-                    border: "none",
-                    background: "transparent",
-                    font: "inherit",
-                    cursor: "pointer",
-                    borderRadius: "var(--radius-sm)",
-                    textAlign: "left",
-                    color: "var(--color-danger)",
-                  }}
+                  className={`${styles.menuItem} ${styles.menuItemDanger}`}
                 >
                   <IconLogout size={18} />
                   Sign out

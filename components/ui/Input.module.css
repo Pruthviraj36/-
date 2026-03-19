@@ -16,20 +16,28 @@
   width: 100%;
   padding: var(--space-sm) var(--space-md);
   font-size: var(--font-size-md);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  transition: border-color var(--transition-hover), box-shadow var(--transition-hover);
+  border: 1px solid color-mix(in srgb, var(--color-border) 78%, #fff 22%);
+  border-radius: calc(var(--radius-sm) + 2px);
+  background: var(--color-surface-2);
+  transition:
+    border-color var(--transition-hover),
+    box-shadow var(--transition-hover),
+    background var(--transition-hover),
+    transform var(--transition-press);
 }
 
 .input:hover:not(:disabled) {
-  border-color: var(--color-muted);
+  border-color: color-mix(in srgb, var(--color-muted) 72%, #fff 28%);
+  background: var(--color-surface);
 }
 
 .input:focus {
   outline: none;
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
+  box-shadow:
+    0 0 0 3px var(--color-primary-light),
+    0 6px 16px rgba(15, 76, 129, 0.1);
+  background: var(--color-surface);
 }
 
 .input:disabled {
@@ -40,6 +48,7 @@
 
 .input::placeholder {
   color: var(--color-muted);
+  opacity: 0.95;
 }
 
 .error {

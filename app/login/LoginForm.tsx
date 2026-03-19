@@ -22,7 +22,12 @@ export function LoginForm() {
     setError("");
     setLoading(true);
     try {
-      const res = await signIn("credentials", { email, password, role, redirect: false });
+      const res = await signIn("credentials", {
+        email,
+        password,
+        role,
+        redirect: false,
+      });
       if (res?.error) {
         setError("Invalid email, password, or role.");
         return;
@@ -70,9 +75,19 @@ export function LoginForm() {
             required
             autoComplete="current-password"
           />
-          {error && <p className={styles.error} role="alert">{error}</p>}
-          <Button type="submit" variant="primary" size="lg" className={styles.btn} disabled={loading}>
-            {loading ? "Signing in…" : "Sign in"}
+          {error && (
+            <p className={styles.error} role="alert">
+              {error}
+            </p>
+          )}
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            className={styles.btn}
+            loading={loading}
+          >
+            {loading ? "Signing in..." : "Sign in"}
           </Button>
         </form>
       </div>

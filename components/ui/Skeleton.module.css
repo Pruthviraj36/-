@@ -1,0 +1,49 @@
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--color-bg-alt) 0%,
+    color-mix(in srgb, var(--color-bg-alt) 86%, #fff 14%) 50%,
+    var(--color-bg-alt) 100%
+  );
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent 10%,
+    var(--loader-sheen) 48%,
+    transparent 90%
+  );
+  animation: shimmer 1.25s ease-in-out infinite;
+}
+
+.skeleton--text {
+  height: 0.75rem;
+}
+
+.skeleton--title {
+  height: 1.1rem;
+}
+
+.skeleton--block {
+  height: 100%;
+}
+
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    animation-duration: 2.2s;
+  }
+}

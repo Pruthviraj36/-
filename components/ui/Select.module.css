@@ -15,25 +15,32 @@
   padding: var(--space-sm) var(--space-md);
   padding-right: 2.5rem;
   font-size: var(--font-size-md);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
+  border: 1px solid color-mix(in srgb, var(--color-border) 78%, #fff 22%);
+  border-radius: calc(var(--radius-sm) + 2px);
+  background: var(--color-surface-2);
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a6b0bf' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   cursor: pointer;
-  transition: border-color var(--transition-hover), box-shadow var(--transition-hover);
+  transition:
+    border-color var(--transition-hover),
+    box-shadow var(--transition-hover),
+    background var(--transition-hover);
 }
 
 .select:hover:not(:disabled) {
-  border-color: var(--color-muted);
+  border-color: color-mix(in srgb, var(--color-muted) 72%, #fff 28%);
+  background: var(--color-surface);
 }
 
 .select:focus {
   outline: none;
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
+  box-shadow:
+    0 0 0 3px var(--color-primary-light),
+    0 6px 16px rgba(15, 76, 129, 0.1);
+  background: var(--color-surface);
 }
 
 .select:disabled {
